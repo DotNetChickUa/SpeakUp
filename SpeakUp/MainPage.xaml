@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:speakUp="clr-namespace:SpeakUp"
+             x:Class="SpeakUp.MainPage"
+             x:DataType="speakUp:MainPageViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="30,0"
+            Spacing="25">
+
+            <Label Text="{Binding State}"/>
+            <Label Text="{Binding IsOfflineSpeechToText}"/>
+            <Label Text="{Binding RecognitionResult}"/>
+            <Button
+                Text="Start" 
+                SemanticProperties.Hint="Counts the number of times you click"
+                Command="{Binding StartListenCommand}"
+                HorizontalOptions="Fill" />
+
+            <Button
+                Text="Stop" 
+                SemanticProperties.Hint="Counts the number of times you click"
+                Command="{Binding StopListenCommand}"
+                HorizontalOptions="Fill" />
+
+            <Button
+                Text="Switch Mode" 
+                Command="{Binding SwitchSpeechToTextCommand}"
+                HorizontalOptions="Fill" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
