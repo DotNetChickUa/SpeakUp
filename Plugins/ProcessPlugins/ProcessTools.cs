@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using Shared;
 
-namespace SpeakUp.Tools;
+namespace ProcessPlugins;
 
+[SpeakUpTool]
 public static class ProcessTools
 {
     [Description("Starts a new process with specified appName")]

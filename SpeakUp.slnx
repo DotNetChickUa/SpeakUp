@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="Plugins/ProcessPlugins/ProcessPlugins.csproj" Id="b3f15894-8abe-4d63-98fa-1aee9cb93cf3" />
+  <Project Path="Shared/Shared.csproj" Id="4bee4e7b-643e-4613-99c9-830a0630391c" />
   <Project Path="SpeakUp/SpeakUp.csproj" />
 </Solution>
