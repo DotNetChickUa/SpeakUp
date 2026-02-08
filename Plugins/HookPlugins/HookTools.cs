@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel;
+using Shared;
 using SharpHook;
 using SharpHook.Data;
 
-namespace SpeakUp.Tools;
+namespace HookPlugins;
 
+[SpeakUpTool]
 public static class HookTools
 {
     [Description("Enter the provided text")]

@@ -12,4 +12,8 @@
 		<ProjectReference Include="..\..\Shared\Shared.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="SharpHook" Version="7.1.1" />
+	</ItemGroup>
+
 </Project>

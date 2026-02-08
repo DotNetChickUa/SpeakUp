@@ -3,6 +3,7 @@ using System.ClientModel;
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
 using OpenAI.Chat;
 using Shared;
 
@@ -13,15 +14,14 @@ public interface IExecutor
     Task<string> Execute(string command);
 }
 
-internal class McpExecutor : IExecutor
+internal class McpExecutor(IConfiguration configuration) : IExecutor
 {
-    /// <inheritdoc />
     public async Task<string> Execute(string command)
     {
         var tools = GetTools();
 
         var agent = new OpenAIClient(
-            new ApiKeyCredential(""),
+            new ApiKeyCredential(configuration["AIKey"]),
             new OpenAIClientOptions()
             {
                 Endpoint = new Uri("https://api.chatanywhere.tech/v1")
@@ -35,22 +35,29 @@ internal class McpExecutor : IExecutor
         return response.Text;
     }
 
-    private IList<AITool> GetTools()
+    private static IList<AITool> GetTools()
     {
         var pluginFiles = Directory.GetFiles("Plugins", "*.dll", SearchOption.AllDirectories);
         var tools = new List<AITool>();
         foreach (var pluginFile in pluginFiles)
         {
-            var assembly = System.Reflection.Assembly.LoadFrom(pluginFile);
-            var types = assembly.GetTypes().Where(t => t.GetCustomAttributes(typeof(SpeakUpToolAttribute), false).Length > 0);
-            foreach (var type in types)
+            try
             {
-                var methods = type.GetMethods().Where(m => m.IsPublic && m.GetCustomAttributes(typeof(DescriptionAttribute), false).Length > 0);
-                foreach (var method in methods)
+                var assembly = Assembly.LoadFrom(pluginFile);
+                var types = assembly.GetTypes().Where(t => t.GetCustomAttributes(typeof(SpeakUpToolAttribute), false).Length > 0);
+                foreach (var type in types)
                 {
-                    var tool = AIFunctionFactory.Create(method, target: null, name: method.Name, method.GetCustomAttribute<DescriptionAttribute>()?.Description);
-                    tools.Add(tool);
+                    var methods = type.GetMethods().Where(m => m.GetCustomAttributes(typeof(DescriptionAttribute), false).Length > 0);
+                    foreach (var method in methods)
+                    {
+                        var tool = AIFunctionFactory.Create(method, target: null, name: method.Name, method.GetCustomAttribute<DescriptionAttribute>()?.Description);
+                        tools.Add(tool);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 
