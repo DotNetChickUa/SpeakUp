@@ -37,18 +37,14 @@ public sealed partial class MainPageViewModel(
         RecognitionResult += e.RecognitionResult;
     }
 
-    private async void _speechToText_RecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e)
+    private async Task ExecuteRecognitionResult()
     {
         try
         {
-            if (e.RecognitionResult.IsSuccessful)
+            if (!string.IsNullOrWhiteSpace(RecognitionResult))
             {
-                Logs.Add($"Recognition completed successfully: {e.RecognitionResult.Text}");
-                Logs.Add(await executor.Execute(e.RecognitionResult.Text));
-            }
-            else
-            {
-                Logs.Add($"Recognition failed: {e.RecognitionResult.Exception.Message}");
+                Logs.Add($"Recognition completed successfully: {RecognitionResult}");
+                Logs.Add(await executor.Execute(RecognitionResult));
             }
         }
         catch (Exception ex)
@@ -68,12 +64,9 @@ public sealed partial class MainPageViewModel(
     [RelayCommand(AllowConcurrentExecutions = false)]
     private async Task StopListen()
     {
-        await SpeechToText.StopListenAsync();
         Unsubscribe();
-        if (!string.IsNullOrEmpty(RecognitionResult))
-        {
-            Logs.Add(await executor.Execute(RecognitionResult));
-        }
+        await SpeechToText.StopListenAsync();
+        await ExecuteRecognitionResult();
     }
 
     [RelayCommand(AllowConcurrentExecutions = false)]
@@ -99,7 +92,6 @@ public sealed partial class MainPageViewModel(
 
         SpeechToText.StateChanged += SpeechToTextOnStateChanged;
         SpeechToText.RecognitionResultUpdated += _speechToText_RecognitionResultUpdated;
-        SpeechToText.RecognitionResultCompleted += _speechToText_RecognitionResultCompleted;
         _isSubscribed = true;
     }
 
@@ -112,7 +104,6 @@ public sealed partial class MainPageViewModel(
 
         SpeechToText.StateChanged -= SpeechToTextOnStateChanged;
         SpeechToText.RecognitionResultUpdated -= _speechToText_RecognitionResultUpdated;
-        SpeechToText.RecognitionResultCompleted -= _speechToText_RecognitionResultCompleted;
         _isSubscribed = false;
     }
 }

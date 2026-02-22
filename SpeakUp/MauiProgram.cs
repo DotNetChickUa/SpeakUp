@@ -27,8 +27,8 @@ namespace SpeakUp
 #endif
 
             builder.Services.AddSingleton<IExecutor, McpExecutor>();
-            builder.Services.AddKeyedSingleton<ISpeechToText>("OnlineSpeechToText", (_, _) => SpeechToText.Default);
-            builder.Services.AddKeyedSingleton<ISpeechToText>("OfflineSpeechToText", (_, _) => OfflineSpeechToText.Default);
+            builder.Services.AddKeyedSingleton<ISpeechToText>(nameof(SpeechToTextImplementation), (_, _) => SpeechToText.Default);
+            builder.Services.AddKeyedSingleton<ISpeechToText>(nameof(OfflineSpeechToTextImplementation), (_, _) => OfflineSpeechToText.Default);
             builder.Services.AddSingleton<MainPageViewModel>();
             return builder.Build();
         }
