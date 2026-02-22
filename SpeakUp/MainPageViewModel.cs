@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -6,10 +7,13 @@ using SpeakUp.Executor;
 
 namespace SpeakUp;
 
-public sealed partial class MainPageViewModel(IExecutor executor) : ObservableObject, IDisposable
+public sealed partial class MainPageViewModel(
+    IExecutor executor,
+    [FromKeyedServices(nameof(SpeechToTextImplementation))] ISpeechToText onlineSpeechToText,
+    [FromKeyedServices(nameof(OfflineSpeechToTextImplementation))] ISpeechToText offlineSpeechToText) : ObservableObject, IDisposable
 {
-    private ISpeechToText _speechToText = SpeechToText.Default;
     private bool _isSubscribed;
+    public ObservableCollection<string> Logs { get; set; } = [];
 
     [ObservableProperty]
     public partial string? State { get; set; }
@@ -17,7 +21,10 @@ public sealed partial class MainPageViewModel(IExecutor executor) : ObservableOb
     [ObservableProperty]
     public partial string? RecognitionResult { get; set; }
 
-    public bool IsOfflineSpeechToText => _speechToText is OfflineSpeechToTextImplementation;
+    [ObservableProperty]
+    public bool IsOfflineSpeechToText { get; set; }
+
+    private ISpeechToText SpeechToText => IsOfflineSpeechToText ? offlineSpeechToText : onlineSpeechToText;
 
 
     private void SpeechToTextOnStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
@@ -32,33 +39,40 @@ public sealed partial class MainPageViewModel(IExecutor executor) : ObservableOb
 
     private async void _speechToText_RecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e)
     {
-        if (e.RecognitionResult.IsSuccessful)
+        try
         {
-            RecognitionResult = e.RecognitionResult.Text;
-            RecognitionResult = await executor.Execute(RecognitionResult);
+            if (e.RecognitionResult.IsSuccessful)
+            {
+                Logs.Add($"Recognition completed successfully: {e.RecognitionResult.Text}");
+                Logs.Add(await executor.Execute(e.RecognitionResult.Text));
+            }
+            else
+            {
+                Logs.Add($"Recognition failed: {e.RecognitionResult.Exception.Message}");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            RecognitionResult = e.RecognitionResult.Exception.Message;
+            Logs.Add($"Error during command execution: {ex.Message}");
         }
     }
 
     [RelayCommand(AllowConcurrentExecutions = false)]
     private async Task StartListen()
     {
-        Subscribe();
         RecognitionResult = null;
-        await _speechToText.StartListenAsync(new SpeechToTextOptions() { Culture = CultureInfo.CurrentCulture, ShouldReportPartialResults = true });
+        await SpeechToText.StartListenAsync(new SpeechToTextOptions() { Culture = CultureInfo.CurrentCulture, ShouldReportPartialResults = true });
+        Subscribe();
     }
 
     [RelayCommand(AllowConcurrentExecutions = false)]
     private async Task StopListen()
     {
-        await _speechToText.StopListenAsync();
+        await SpeechToText.StopListenAsync();
         Unsubscribe();
         if (!string.IsNullOrEmpty(RecognitionResult))
         {
-            RecognitionResult = await executor.Execute(RecognitionResult);
+            Logs.Add(await executor.Execute(RecognitionResult));
         }
     }
 
@@ -66,13 +80,8 @@ public sealed partial class MainPageViewModel(IExecutor executor) : ObservableOb
     private async Task SwitchSpeechToText()
     {
         await StopListen();
-        Unsubscribe();
 
-        _speechToText = _speechToText == SpeechToText.Default ? OfflineSpeechToText.Default : SpeechToText.Default;
-
-        Subscribe();
-
-        OnPropertyChanged(nameof(IsOfflineSpeechToText));
+        IsOfflineSpeechToText = !IsOfflineSpeechToText;
     }
 
     /// <inheritdoc />
@@ -88,9 +97,9 @@ public sealed partial class MainPageViewModel(IExecutor executor) : ObservableOb
             return;
         }
 
-        _speechToText.StateChanged += SpeechToTextOnStateChanged;
-        _speechToText.RecognitionResultUpdated += _speechToText_RecognitionResultUpdated;
-        _speechToText.RecognitionResultCompleted += _speechToText_RecognitionResultCompleted;
+        SpeechToText.StateChanged += SpeechToTextOnStateChanged;
+        SpeechToText.RecognitionResultUpdated += _speechToText_RecognitionResultUpdated;
+        SpeechToText.RecognitionResultCompleted += _speechToText_RecognitionResultCompleted;
         _isSubscribed = true;
     }
 
@@ -101,9 +110,9 @@ public sealed partial class MainPageViewModel(IExecutor executor) : ObservableOb
             return;
         }
 
-        _speechToText.StateChanged -= SpeechToTextOnStateChanged;
-        _speechToText.RecognitionResultUpdated -= _speechToText_RecognitionResultUpdated;
-        _speechToText.RecognitionResultCompleted -= _speechToText_RecognitionResultCompleted;
+        SpeechToText.StateChanged -= SpeechToTextOnStateChanged;
+        SpeechToText.RecognitionResultUpdated -= _speechToText_RecognitionResultUpdated;
+        SpeechToText.RecognitionResultCompleted -= _speechToText_RecognitionResultCompleted;
         _isSubscribed = false;
     }
 }

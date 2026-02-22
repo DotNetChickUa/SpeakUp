@@ -4,47 +4,78 @@ using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using OpenAI.Chat;
 using Shared;
 
-namespace SpeakUp;
+namespace SpeakUp.Executor;
 
-internal class McpExecutor(IConfiguration configuration) : IExecutor
+internal class McpExecutor : IExecutor, IDisposable
 {
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<McpExecutor> _logger;
+    private readonly Lazy<PluginLoadResult> _lazyPlugins;
+    private ChatClient? _chatClient;
+    private bool _disposed;
+
+    public McpExecutor(IConfiguration configuration, ILogger<McpExecutor> logger)
+    {
+        _configuration = configuration;
+        _logger = logger;
+        _lazyPlugins = new Lazy<PluginLoadResult>(LoadTools);
+    }
+
     public async Task<string> Execute(string command)
     {
-        var loadResult = LoadTools();
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         try
         {
-            var agent = new OpenAIClient(
-                    new ApiKeyCredential(configuration["AIKey"]),
-                    new OpenAIClientOptions()
-                    {
-                        Endpoint = new Uri("https://api.chatanywhere.tech/v1")
-                    }).GetChatClient("gpt-4o-mini")
+            var tools = _lazyPlugins.Value.Tools;
+            var agent = GetOrCreateChatClient()
+                .AsIChatClient()
                 .CreateAIAgent(
-                    instructions: "You are a powerful super user that can execute any commands",
+                    instructions: "You are a powerful super user that can execute any commands. It is important you do exactly what I ask you. Make sure you run the command in correct order, with correct arguments and ensure you don't replay the same command multiple times. You must follow the workflow I provided for you. Example: I ask you to start notepad and enter the text 'Hello World'. You must start the notepad only once, and enter exactly the text 'Hello World'",
                     name: "McpExecutor",
-                    tools: loadResult.Tools);
+                    tools: tools);
 
             var response = await agent.RunAsync(command);
             return response.Text;
         }
-        finally
+        catch (Exception ex)
         {
-            loadResult.Unload();
+            _logger.LogError(ex, "Error executing command: {Command}", command);
+            return $"Execution failed: {ex.Message}";
         }
     }
 
-    private static PluginLoadResult LoadTools()
+    private ChatClient GetOrCreateChatClient()
+    {
+        if (_chatClient is not null)
+        {
+            return _chatClient;
+        }
+
+        _chatClient = new OpenAIClient(
+            new ApiKeyCredential(_configuration["AIKey"] ?? throw new InvalidOperationException("AIKey not configured")),
+            new OpenAIClientOptions()
+            {
+                Endpoint = new Uri("https://api.chatanywhere.tech/v1")
+            }).GetChatClient("gpt-4o-mini");
+
+        return _chatClient;
+    }
+
+    private PluginLoadResult LoadTools()
     {
         var pluginsPath = Path.Combine(AppContext.BaseDirectory, "Plugins");
         var pluginFiles = Directory.Exists(pluginsPath)
             ? Directory.GetFiles(pluginsPath, "*.dll", SearchOption.AllDirectories)
             : Array.Empty<string>();
+        
         var tools = new List<AITool>();
         var loadContexts = new List<PluginLoadContext>();
+        
         foreach (var pluginFile in pluginFiles)
         {
             if (!IsManagedAssembly(pluginFile))
@@ -57,16 +88,19 @@ internal class McpExecutor(IConfiguration configuration) : IExecutor
                 var loadContext = new PluginLoadContext(pluginFile);
                 var assembly = loadContext.LoadFromAssemblyPath(Path.GetFullPath(pluginFile));
                 var types = assembly.GetTypes()
-                    .Where(t => t.GetCustomAttributes(typeof(SpeakUpToolAttribute), false).Length > 0);
+                    .Where(t => t.GetCustomAttribute<SpeakUpToolAttribute>() is not null);
+                
                 foreach (var type in types)
                 {
-                    var methods = type.GetMethods().Where(m =>
-                        m.GetCustomAttributes(typeof(DescriptionAttribute), false).Length > 0);
+                    var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                        .Where(m => m.GetCustomAttribute<DescriptionAttribute>() is not null);
+                    
                     foreach (var method in methods)
                     {
-                        var tool = AIFunctionFactory.Create(method, target: null, name: method.Name,
-                            method.GetCustomAttribute<DescriptionAttribute>()?.Description);
+                        var description = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
+                        var tool = AIFunctionFactory.Create(method, target: null, name: method.Name, description);
                         tools.Add(tool);
+                        _logger.LogInformation("Loaded tool: {ToolName} from {Assembly}", method.Name, assembly.FullName);
                     }
                 }
 
@@ -74,26 +108,22 @@ internal class McpExecutor(IConfiguration configuration) : IExecutor
             }
             catch (ReflectionTypeLoadException e)
             {
-                Console.WriteLine(e);
-                foreach (var loaderException in e.LoaderExceptions)
+                _logger.LogError(e, "ReflectionTypeLoadException loading {PluginFile}", pluginFile);
+                if (e.LoaderExceptions is not null)
                 {
-                    Console.WriteLine(loaderException);
+                    foreach (var loaderException in e.LoaderExceptions)
+                    {
+                        _logger.LogError(loaderException, "Loader exception");
+                    }
                 }
             }
-            catch (FileNotFoundException e)
+            catch (Exception e) when (e is FileNotFoundException or FileLoadException or BadImageFormatException)
             {
-                Console.WriteLine(e);
-            }
-            catch (FileLoadException e)
-            {
-                Console.WriteLine(e);
-            }
-            catch (BadImageFormatException e)
-            {
-                Console.WriteLine(e);
+                _logger.LogWarning(e, "Could not load plugin {PluginFile}", pluginFile);
             }
         }
 
+        _logger.LogInformation("Loaded {Count} tools from {ContextCount} plugin contexts", tools.Count, loadContexts.Count);
         return new PluginLoadResult(tools, loadContexts);
     }
 
@@ -116,5 +146,20 @@ internal class McpExecutor(IConfiguration configuration) : IExecutor
         {
             return false;
         }
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (_lazyPlugins.IsValueCreated)
+        {
+            _lazyPlugins.Value.Unload();
+        }
+
+        _disposed = true;
     }
 }

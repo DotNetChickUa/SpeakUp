@@ -1,18 +1,9 @@
 using Microsoft.Extensions.AI;
 
-namespace SpeakUp;
+namespace SpeakUp.Executor;
 
-sealed class PluginLoadResult
+sealed class PluginLoadResult(List<AITool> tools, List<PluginLoadContext> loadContexts)
 {
-    private readonly List<AITool> tools;
-    private readonly List<PluginLoadContext> loadContexts;
-
-    public PluginLoadResult(List<AITool> tools, List<PluginLoadContext> loadContexts)
-    {
-        this.tools = tools;
-        this.loadContexts = loadContexts;
-    }
-
     public IList<AITool> Tools => tools;
 
     public void Unload()

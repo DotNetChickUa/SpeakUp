@@ -5,31 +5,39 @@
              x:Class="SpeakUp.MainPage"
              x:DataType="speakUp:MainPageViewModel">
 
-    <ScrollView>
-        <VerticalStackLayout
+	<ScrollView>
+		<VerticalStackLayout
             Padding="30,0"
             Spacing="25">
 
-            <Label Text="{Binding State}"/>
-            <Label Text="{Binding IsOfflineSpeechToText}"/>
-            <Label Text="{Binding RecognitionResult}"/>
-            <Button
+			<Label Text="{Binding State}"/>
+			<Label Text="{Binding IsOfflineSpeechToText}"/>
+			<Label Text="{Binding RecognitionResult}"/>
+			<Button
                 Text="Start" 
                 SemanticProperties.Hint="Counts the number of times you click"
                 Command="{Binding StartListenCommand}"
                 HorizontalOptions="Fill" />
 
-            <Button
+			<Button
                 Text="Stop" 
                 SemanticProperties.Hint="Counts the number of times you click"
                 Command="{Binding StopListenCommand}"
                 HorizontalOptions="Fill" />
 
-            <Button
+			<Button
                 Text="Switch Mode" 
                 Command="{Binding SwitchSpeechToTextCommand}"
                 HorizontalOptions="Fill" />
-        </VerticalStackLayout>
-    </ScrollView>
+
+			<CollectionView ItemsSource="{Binding Logs}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Label Text="{Binding }"></Label>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+			</CollectionView>
+		</VerticalStackLayout>
+	</ScrollView>
 
 </ContentPage>

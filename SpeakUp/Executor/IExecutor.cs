@@ -1,4 +1,4 @@
-namespace SpeakUp;
+namespace SpeakUp.Executor;
 
 public interface IExecutor
 {
