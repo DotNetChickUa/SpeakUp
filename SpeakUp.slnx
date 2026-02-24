@@ -1,7 +1,31 @@
 <Solution>
   <Folder Name="/Plugins/">
+    <Project Path="Plugins/AbstractApiExtensions/AbstractApiExtensions.csproj" />
+    <Project Path="Plugins/AIExtensions/AIExtensions.csproj" />
+    <Project Path="Plugins/AmazonS3Extensions/AmazonS3Extensions.csproj" />
+    <Project Path="Plugins/ApplicationInsightsExtensions/ApplicationInsightsExtensions.csproj" />
+    <Project Path="Plugins/DatabaseExtensions/DatabaseExtensions.csproj" />
+    <Project Path="Plugins/DeviceExtensions/DeviceExtensions.csproj" />
+    <Project Path="Plugins/DialogExtensions/DialogExtensions.csproj" />
+    <Project Path="Plugins/DrawGo.Base.Extensions/Base.Extensions.csproj" />
+    <Project Path="Plugins/ElasticEmailExtensions/ElasticEmailExtensions.csproj" />
+    <Project Path="Plugins/FacebookExtensions/FacebookExtensions.csproj" />
+    <Project Path="Plugins/FileSystemExtensions/FileSystemExtensions.csproj" />
+    <Project Path="Plugins/GoogleDriveExtensions/GoogleDriveExtensions.csproj" />
     <Project Path="Plugins/HookPlugins/HookPlugins.csproj" Id="05eacfc9-2084-4a31-8b31-701fcd660f27" />
+    <Project Path="Plugins/MailgunExtensions/MailgunExtensions.csproj" />
+    <Project Path="Plugins/MegaExtensions/MegaExtensions.csproj" />
+    <Project Path="Plugins/ProcessExtensions/ProcessExtensions.csproj" />
     <Project Path="Plugins/ProcessPlugins/ProcessPlugins.csproj" Id="b3f15894-8abe-4d63-98fa-1aee9cb93cf3" />
+    <Project Path="Plugins/RandomExtensions/RandomExtensions.csproj" />
+    <Project Path="Plugins/SendGridExtensions/SendGridExtensions.csproj" />
+    <Project Path="Plugins/SlackExtensions/SlackExtensions.csproj" />
+    <Project Path="Plugins/SshExtensions/SshExtensions.csproj" />
+    <Project Path="Plugins/TelegramExtensions/TelegramExtensions.csproj" />
+    <Project Path="Plugins/TwillioExtensions/TwilioExtensions.csproj" />
+    <Project Path="Plugins/TwitterExtensions/TwitterExtensions.csproj" />
+    <Project Path="Plugins/ViberExtensions/ViberExtensions.csproj" />
+    <Project Path="Plugins/WebAuthenticationExtensions/WebAuthenticationExtensions.csproj" />
   </Folder>
   <Project Path="Shared/Shared.csproj" Id="4bee4e7b-643e-4613-99c9-830a0630391c" />
   <Project Path="SpeakUp/SpeakUp.csproj" />
