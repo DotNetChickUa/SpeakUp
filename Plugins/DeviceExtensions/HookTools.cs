@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using Shared;
 using SharpHook;
 using SharpHook.Data;
@@ -11,6 +12,7 @@ public static class HookTools
     [Description("Enter the provided text")]
     public static UioHookResult EnterText(string text)
     {
+        Debug.WriteLine($"Simulating text entry: {text}");
         var simulator = new EventSimulator();
         return simulator.SimulateTextEntry(text);
     }

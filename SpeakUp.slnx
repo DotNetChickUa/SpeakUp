@@ -22,7 +22,6 @@
     <Project Path="Plugins/TwillioExtensions/TwilioExtensions.csproj" />
     <Project Path="Plugins/TwitterExtensions/TwitterExtensions.csproj" />
     <Project Path="Plugins/ViberExtensions/ViberExtensions.csproj" />
-    <Project Path="Plugins/WebAuthenticationExtensions/WebAuthenticationExtensions.csproj" />
   </Folder>
   <Project Path="Shared/Shared.csproj" Id="4bee4e7b-643e-4613-99c9-830a0630391c" />
   <Project Path="SpeakUp/SpeakUp.csproj" />

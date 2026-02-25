@@ -22,7 +22,7 @@ public sealed partial class MainPageViewModel(
     public partial string? RecognitionResult { get; set; }
 
     [ObservableProperty]
-    public bool IsOfflineSpeechToText { get; set; }
+    public partial bool IsOfflineSpeechToText { get; set; }
 
     private ISpeechToText SpeechToText => IsOfflineSpeechToText ? offlineSpeechToText : onlineSpeechToText;
 

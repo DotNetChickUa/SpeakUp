@@ -1,10 +1,12 @@
-﻿using Shared;
+﻿using System.ComponentModel;
+using Shared;
 
 namespace DeviceExtensions.GetLocationMacroCommand;
 
 [SpeakUpTool]
 public class GetLocationMacroCommand
 {
+	[Description("Returns my geoposition location")]
 	public static async Task<GeolocationResult?> GetLocation(CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();

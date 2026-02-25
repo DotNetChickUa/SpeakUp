@@ -34,7 +34,7 @@ internal class McpExecutor : IExecutor, IDisposable
             var tools = _lazyPlugins.Value.Tools;
             var agent = GetOrCreateChatClient()
                 .AsIChatClient()
-                .CreateAIAgent(
+                .AsAIAgent(
                     instructions: "You are a powerful super user that can execute any commands. It is important you do exactly what I ask you. Make sure you run the command in correct order, with correct arguments and ensure you don't replay the same command multiple times. You must follow the workflow I provided for you. Example: I ask you to start notepad and enter the text 'Hello World'. You must start the notepad only once, and enter exactly the text 'Hello World'",
                     name: "McpExecutor",
                     tools: tools);
