@@ -7,7 +7,7 @@
     <Project Path="Plugins/DatabaseExtensions/DatabaseExtensions.csproj" />
     <Project Path="Plugins/DeviceExtensions/DeviceExtensions.csproj" />
     <Project Path="Plugins/DialogExtensions/DialogExtensions.csproj" />
-    <Project Path="Plugins/DrawGo.Base.Extensions/Base.Extensions.csproj" />
+    <Project Path="Plugins/Base.Extensions/Base.Extensions.csproj" />
     <Project Path="Plugins/ElasticEmailExtensions/ElasticEmailExtensions.csproj" />
     <Project Path="Plugins/FacebookExtensions/FacebookExtensions.csproj" />
     <Project Path="Plugins/FileSystemExtensions/FileSystemExtensions.csproj" />
