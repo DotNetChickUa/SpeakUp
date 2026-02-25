@@ -1,12 +1,15 @@
-using OpenAI;
-using System.ClientModel;
-using System.ComponentModel;
-using System.Reflection;
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using OpenAI;
 using OpenAI.Chat;
 using Shared;
+using System.ClientModel;
+using System.ComponentModel;
+using System.Reflection;
+using System.Text;
+using Microsoft.Agents.AI.Workflows;
 
 namespace SpeakUp.Executor;
 
@@ -39,8 +42,38 @@ internal class McpExecutor : IExecutor, IDisposable
                     name: "McpExecutor",
                     tools: tools);
 
-            var response = await agent.RunAsync(command);
-            return response.Text;
+            var workflow = AgentWorkflowBuilder.BuildSequential(agent);
+            AIAgent workflowAgent = workflow.AsAIAgent(
+                id: "content-pipeline",
+                name: "Content Pipeline Agent",
+                description: "A multi-agent workflow that researches, writes, and reviews content"
+            );
+            // Create a new session for the conversation
+            AgentSession session = await workflowAgent.CreateSessionAsync();
+            var result = new StringBuilder();
+            await foreach (AgentResponseUpdate update in workflowAgent.RunStreamingAsync(command, session))
+            {
+                result.Append(update.Text);
+                // Check for function call requests
+                foreach (AIContent content in update.Contents)
+                {
+                    if (content is FunctionCallContent functionCall)
+                    {
+                        await Application.Current.Dispatcher.DispatchAsync<string>(async () =>
+                        {
+                            await Application.Current.MainPage.DisplayAlert("Workflow Request", $"Workflow requests input: {functionCall.Name}\nRequest data: {functionCall.Arguments}", "OK");
+                            foreach (var argument in functionCall.Arguments)
+                            {
+                                functionCall.Arguments[argument.Key] = await Application.Current.MainPage.DisplayPromptAsync("Workflow Request", $"Please provide a value for {argument.Key}", "OK", initialValue: argument.Value.ToString());
+                            }
+
+                            return string.Empty;
+                        });
+                    }
+                }
+            }
+
+            return result.ToString();
         }
         catch (Exception ex)
         {
@@ -62,7 +95,6 @@ internal class McpExecutor : IExecutor, IDisposable
             {
                 Endpoint = new Uri("https://api.chatanywhere.tech/v1")
             }).GetChatClient("gpt-4o-mini");
-
         return _chatClient;
     }
 
@@ -72,10 +104,10 @@ internal class McpExecutor : IExecutor, IDisposable
         var pluginFiles = Directory.Exists(pluginsPath)
             ? Directory.GetFiles(pluginsPath, "*.dll", SearchOption.AllDirectories)
             : Array.Empty<string>();
-        
+
         var tools = new List<AITool>();
         var loadContexts = new List<PluginLoadContext>();
-        
+
         foreach (var pluginFile in pluginFiles)
         {
             if (!IsManagedAssembly(pluginFile))
@@ -89,12 +121,12 @@ internal class McpExecutor : IExecutor, IDisposable
                 var assembly = loadContext.LoadFromAssemblyPath(Path.GetFullPath(pluginFile));
                 var types = assembly.GetTypes()
                     .Where(t => t.GetCustomAttribute<SpeakUpToolAttribute>() is not null);
-                
+
                 foreach (var type in types)
                 {
                     var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
                         .Where(m => m.GetCustomAttribute<DescriptionAttribute>() is not null);
-                    
+
                     foreach (var method in methods)
                     {
                         var description = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
