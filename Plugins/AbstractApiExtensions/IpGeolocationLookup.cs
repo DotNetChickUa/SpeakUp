@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 public class IpGeolocationLookup
 {
 	[Description("Retrieves geolocation information for the given IP address using the Abstract API IP geolocation service.")]
-	public async Task<IpGeolocationLookupResponse?> IsValid(string apiKey, CancellationToken cancellationToken)
+	public static async Task<IpGeolocationLookupResponse?> GetGeolocationByIp(string apiKey, CancellationToken cancellationToken)
 	{
 		using var api = new HttpClient();
 		api.BaseAddress = new Uri("https://ipgeolocation.abstractapi.com/v1/");

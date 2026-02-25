@@ -8,7 +8,7 @@ using System.Net.Http.Json;
 public class PlagiarismChecker
 {
 	[Description("Checks the provided text for plagiarism using the Edubirdie plagiarism checker.")]
-	public  async Task<PlagiarismResponse?> GetCompletionAsync(string text, 
+	public static async Task<PlagiarismResponse?> GetCompletionAsync(string text, 
         CancellationToken cancellationToken)
 	{
 		using var httpClient = new HttpClient();

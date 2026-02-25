@@ -7,7 +7,7 @@ namespace AIExtensions;
 public class GetCompletion
 {
     [Description("Generates a completion for the given prompt using the OpenAI API.")]
-    public async Task<string> GetCompletionAsync(string apiKey, string prompt, string model)
+    public static async Task<string> GetCompletionAsync(string apiKey, string prompt, string model)
     {
         var api = new OpenAI.OpenAIClient(apiKey);
         var result = await api.GetChatClient(model).CompleteChatAsync(prompt);

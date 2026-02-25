@@ -7,7 +7,7 @@ namespace AmazonS3Extensions;
 public class AmazonS3ListFilesMacroCommand
 {
 	[Description("Lists files in an Amazon S3 bucket.")]
-	public async Task<IEnumerable<S3File>?> ListFiles(string accessKey, string secretKey, string bucketName, CancellationToken cancellationToken)
+	public static async Task<IEnumerable<S3File>?> ListFiles(string accessKey, string secretKey, string bucketName, CancellationToken cancellationToken)
 	{
 		using var amazonS3Api = new AmazonS3Api(accessKey, secretKey);
 		var listResult = await amazonS3Api.ListFiles(bucketName, cancellationToken);

@@ -8,7 +8,7 @@ namespace AIExtensions;
 public class ImageGeneration
 {
 	[Description("Generates an image based on the given prompt using the OpenAI API.")]
-	public async Task<Uri> GetCompletionAsync(string apiKey, string prompt, string model, CancellationToken cancellationToken)
+	public static async Task<Uri> GetCompletionAsync(string apiKey, string prompt, string model, CancellationToken cancellationToken)
 	{
 		var api = new OpenAI.OpenAIClient(apiKey);
 		var result = await api.GetImageClient(model).GenerateImageAsync(prompt, new ImageGenerationOptions(){ResponseFormat = GeneratedImageFormat.Uri}, cancellationToken: cancellationToken);

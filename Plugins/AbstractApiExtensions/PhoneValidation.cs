@@ -9,7 +9,7 @@ using System.Net.Http.Json;
 public class PhoneValidation
 {
 	[Description("Validates a phone number using the Abstract API phone validation service.")]
-	public async Task<bool> IsValid(string apiKey, string phone, CancellationToken cancellationToken)
+	public static async Task<bool> IsValid(string apiKey, string phone, CancellationToken cancellationToken)
 	{
 		using var api = new HttpClient();
 		api.BaseAddress = new Uri("https://phonevalidation.abstractapi.com/v1/");

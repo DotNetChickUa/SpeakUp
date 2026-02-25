@@ -9,7 +9,7 @@ using System.Text.Json;
 public class Query : AppInsightMacroCommand
 {
 	[Description("The query to execute against Application Insights")]
-	public async Task<object?> GetResultsAsync(string appId, string query, string apiKey, CancellationToken cancellationToken)
+	public static async Task<object?> GetResultsAsync(string appId, string query, string apiKey, CancellationToken cancellationToken)
 	{
 		var url = BuildUrl(appId, query);
 		using var client = BuildClient(apiKey);
