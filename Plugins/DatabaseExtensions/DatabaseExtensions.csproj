@@ -13,7 +13,7 @@
 	<ItemGroup>
 		<PackageReference Include="MySql.Data" Version="9.6.0" />
 		<PackageReference Include="Npgsql" Version="10.0.1" />
-		<PackageReference Include="SqlKata.Execution" Version="3.0.0-beta" />
-		<PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+		<PackageReference Include="SqlKata.Execution" Version="4.0.1" />
+		<PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
 	</ItemGroup>
 </Project>

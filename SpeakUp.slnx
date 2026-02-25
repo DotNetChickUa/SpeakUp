@@ -6,17 +6,14 @@
     <Project Path="Plugins/ApplicationInsightsExtensions/ApplicationInsightsExtensions.csproj" />
     <Project Path="Plugins/DatabaseExtensions/DatabaseExtensions.csproj" />
     <Project Path="Plugins/DeviceExtensions/DeviceExtensions.csproj" />
-    <Project Path="Plugins/DialogExtensions/DialogExtensions.csproj" />
     <Project Path="Plugins/Base.Extensions/Base.Extensions.csproj" />
     <Project Path="Plugins/ElasticEmailExtensions/ElasticEmailExtensions.csproj" />
     <Project Path="Plugins/FacebookExtensions/FacebookExtensions.csproj" />
     <Project Path="Plugins/FileSystemExtensions/FileSystemExtensions.csproj" />
     <Project Path="Plugins/GoogleDriveExtensions/GoogleDriveExtensions.csproj" />
-    <Project Path="Plugins/HookPlugins/HookPlugins.csproj" Id="05eacfc9-2084-4a31-8b31-701fcd660f27" />
     <Project Path="Plugins/MailgunExtensions/MailgunExtensions.csproj" />
     <Project Path="Plugins/MegaExtensions/MegaExtensions.csproj" />
     <Project Path="Plugins/ProcessExtensions/ProcessExtensions.csproj" />
-    <Project Path="Plugins/ProcessPlugins/ProcessPlugins.csproj" Id="b3f15894-8abe-4d63-98fa-1aee9cb93cf3" />
     <Project Path="Plugins/RandomExtensions/RandomExtensions.csproj" />
     <Project Path="Plugins/SendGridExtensions/SendGridExtensions.csproj" />
     <Project Path="Plugins/SlackExtensions/SlackExtensions.csproj" />
