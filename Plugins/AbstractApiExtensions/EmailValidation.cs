@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 public class EmailValidation
 {
 	[Description("Validates an email address using the Abstract API email verification service.")]
-	public static async Task<bool> IsValid(string apiKey, string email, CancellationToken cancellationToken)
+	public static async Task<bool> IsEmailValid(string apiKey, string email, CancellationToken cancellationToken)
 	{
 		using var api = new HttpClient();
 		api.BaseAddress = new Uri("https://emailvalidation.abstractapi.com/v1/");

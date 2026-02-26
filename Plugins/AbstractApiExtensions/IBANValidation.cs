@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 public class IbanValidation
 {
 	[Description("Validates the given IBAN using the Abstract API IBAN validation service.")]
-	public static async Task<bool> IsValid(string apiKey, string iban, CancellationToken cancellationToken)
+	public static async Task<bool> IsIbanValid(string apiKey, string iban, CancellationToken cancellationToken)
 	{
 		using var api = new HttpClient();
 		api.BaseAddress = new Uri("https://ibanvalidation.abstractapi.com/v1/");

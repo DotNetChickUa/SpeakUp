@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 public class VatValidation
 {
 	[Description("Validates a VAT number using the Abstract API VAT validation service.")]
-	public static async Task<bool> IsValid(string apiKey, string vatNumber, CancellationToken cancellationToken)
+	public static async Task<bool> IsVatValid(string apiKey, string vatNumber, CancellationToken cancellationToken)
 	{
 		using var api = new HttpClient();
 		api.BaseAddress = new Uri("https://vat.abstractapi.com/v1/validate/");

@@ -51,24 +51,28 @@ internal class McpExecutor : IExecutor, IDisposable
             // Create a new session for the conversation
             AgentSession session = await workflowAgent.CreateSessionAsync();
             var result = new StringBuilder();
+
             await foreach (AgentResponseUpdate update in workflowAgent.RunStreamingAsync(command, session))
             {
-                result.Append(update.Text);
-                // Check for function call requests
                 foreach (AIContent content in update.Contents)
                 {
                     if (content is FunctionCallContent functionCall)
                     {
+                        functionCall.AdditionalProperties ??= new AdditionalPropertiesDictionary();
                         await Application.Current.Dispatcher.DispatchAsync<string>(async () =>
                         {
-                            await Application.Current.MainPage.DisplayAlert("Workflow Request", $"Workflow requests input: {functionCall.Name}\nRequest data: {functionCall.Arguments}", "OK");
+                            await Shell.Current.CurrentPage.DisplayAlertAsync("Workflow Request", $"Workflow requests input: {functionCall.Name}", "OK");
                             foreach (var argument in functionCall.Arguments)
                             {
-                                functionCall.Arguments[argument.Key] = await Application.Current.MainPage.DisplayPromptAsync("Workflow Request", $"Please provide a value for {argument.Key}", "OK", initialValue: argument.Value.ToString());
+                                functionCall.Arguments[argument.Key] = await Shell.Current.CurrentPage.DisplayPromptAsync("Workflow Request", $"Please provide a value for {argument.Key}", "OK", initialValue: argument.Value.ToString());
                             }
 
                             return string.Empty;
                         });
+                    }
+                    else if (content is TextContent textContent)
+                    {
+                        result.Append(textContent.Text);
                     }
                 }
             }

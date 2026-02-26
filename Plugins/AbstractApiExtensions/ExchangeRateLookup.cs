@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 public class ExchangeRateLookup
 {
 	[Description("Retrieves the exchange rate between two currencies using the Abstract API exchange rate service.")]
-	public static async Task<ExchangeRate?> IsValid(string apiKey, string @base, string target, CancellationToken cancellationToken)
+	public static async Task<ExchangeRate?> GetExchangeRate(string apiKey, string @base, string target, CancellationToken cancellationToken)
 	{
 		using var api = new HttpClient();
 		api.BaseAddress = new Uri("https://exchange-rates.abstractapi.com/v1/live/");
