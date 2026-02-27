@@ -7,9 +7,10 @@ using OpenAI.Chat;
 using Shared;
 using System.ClientModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
-using Microsoft.Agents.AI.Workflows;
+using System.Text.Json;
 
 namespace SpeakUp.Executor;
 
@@ -42,32 +43,29 @@ internal class McpExecutor : IExecutor, IDisposable
                     name: "McpExecutor",
                     tools: tools);
 
-            var workflow = AgentWorkflowBuilder.BuildSequential(agent);
-            AIAgent workflowAgent = workflow.AsAIAgent(
-                id: "content-pipeline",
-                name: "Content Pipeline Agent",
-                description: "A multi-agent workflow that researches, writes, and reviews content"
-            );
-            // Create a new session for the conversation
-            AgentSession session = await workflowAgent.CreateSessionAsync();
+            AgentSession session = await agent.CreateSessionAsync();
             var result = new StringBuilder();
 
-            await foreach (AgentResponseUpdate update in workflowAgent.RunStreamingAsync(command, session))
+            await foreach (AgentResponseUpdate update in agent.RunStreamingAsync(command, session))
             {
                 foreach (AIContent content in update.Contents)
                 {
                     if (content is FunctionCallContent functionCall)
                     {
-                        functionCall.AdditionalProperties ??= new AdditionalPropertiesDictionary();
-                        await Application.Current.Dispatcher.DispatchAsync<string>(async () =>
+                        await Application.Current.Dispatcher.DispatchAsync(async () =>
                         {
                             await Shell.Current.CurrentPage.DisplayAlertAsync("Workflow Request", $"Workflow requests input: {functionCall.Name}", "OK");
-                            foreach (var argument in functionCall.Arguments)
+                            foreach (var argumentKey in functionCall.Arguments.Keys)
                             {
-                                functionCall.Arguments[argument.Key] = await Shell.Current.CurrentPage.DisplayPromptAsync("Workflow Request", $"Please provide a value for {argument.Key}", "OK", initialValue: argument.Value.ToString());
-                            }
+                                var existingValue = functionCall.Arguments[argumentKey];
+                                var promptValue = await Shell.Current.CurrentPage.DisplayPromptAsync(
+                                    "Workflow Request",
+                                    $"Please provide a value for {argumentKey}",
+                                    "OK",
+                                    initialValue: existingValue?.ToString());
 
-                            return string.Empty;
+                                functionCall.Arguments[argumentKey] = GetArgumentValueForInput(existingValue, promptValue);
+                            }
                         });
                     }
                     else if (content is TextContent textContent)
@@ -97,7 +95,8 @@ internal class McpExecutor : IExecutor, IDisposable
             new ApiKeyCredential(_configuration["AIKey"] ?? throw new InvalidOperationException("AIKey not configured")),
             new OpenAIClientOptions()
             {
-                Endpoint = new Uri("https://api.chatanywhere.tech/v1")
+                //Endpoint = new Uri("https://api.chatanywhere.tech/v1")
+                Endpoint = new Uri("https://free.v36.cm/v1")
             }).GetChatClient("gpt-4o-mini");
         return _chatClient;
     }
@@ -134,9 +133,9 @@ internal class McpExecutor : IExecutor, IDisposable
                     foreach (var method in methods)
                     {
                         var description = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
-                        var tool = AIFunctionFactory.Create(method, target: null, name: method.Name, description);
+                        var tool = AIFunctionFactory.Create(method, target: null, name: $"{string.Join("", type.FullName.TakeLast(40))}.{method.Name}", description);
                         tools.Add(tool);
-                        _logger.LogInformation("Loaded tool: {ToolName} from {Assembly}", method.Name, assembly.FullName);
+                        _logger.LogInformation("Loaded tool: {ToolName} from {Assembly}", tool.Name, assembly.FullName);
                     }
                 }
 
@@ -180,6 +179,105 @@ internal class McpExecutor : IExecutor, IDisposable
         }
         catch (FileNotFoundException)
         {
+            return false;
+        }
+    }
+
+    private static object? GetArgumentValueForInput(object? existingValue, string? input)
+    {
+        if (input is null)
+        {
+            return existingValue;
+        }
+
+        if (existingValue is null)
+        {
+            return input;
+        }
+
+        if (existingValue is JsonElement jsonElement)
+        {
+            return GetValueFromJsonElement(jsonElement, input);
+        }
+
+        var targetType = existingValue.GetType();
+        if (targetType == typeof(string))
+        {
+            return input;
+        }
+
+        if (targetType.IsEnum && Enum.TryParse(targetType, input, ignoreCase: true, out var enumValue))
+        {
+            return enumValue;
+        }
+
+        try
+        {
+            return Convert.ChangeType(input, targetType, CultureInfo.InvariantCulture);
+        }
+        catch (InvalidCastException)
+        {
+            return input;
+        }
+        catch (FormatException)
+        {
+            return input;
+        }
+        catch (OverflowException)
+        {
+            return input;
+        }
+    }
+
+    private static JsonElement GetValueFromJsonElement(JsonElement element, string input)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Number:
+                if (long.TryParse(input, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue))
+                {
+                    return JsonSerializer.SerializeToElement(longValue);
+                }
+
+                if (double.TryParse(input, NumberStyles.Float, CultureInfo.InvariantCulture, out var doubleValue))
+                {
+                    return JsonSerializer.SerializeToElement(doubleValue);
+                }
+
+                return JsonSerializer.SerializeToElement(input);
+            case JsonValueKind.True:
+            case JsonValueKind.False:
+                if (bool.TryParse(input, out var boolValue))
+                {
+                    return JsonSerializer.SerializeToElement(boolValue);
+                }
+
+                return JsonSerializer.SerializeToElement(input);
+            case JsonValueKind.Object:
+            case JsonValueKind.Array:
+                if (TryParseJsonElement(input, out var parsedJson))
+                {
+                    return parsedJson;
+                }
+
+                return JsonSerializer.SerializeToElement(input);
+            case JsonValueKind.String:
+            default:
+                return JsonSerializer.SerializeToElement(input);
+        }
+    }
+
+    private static bool TryParseJsonElement(string input, out JsonElement element)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(input);
+            element = document.RootElement.Clone();
+            return true;
+        }
+        catch (JsonException)
+        {
+            element = default;
             return false;
         }
     }
