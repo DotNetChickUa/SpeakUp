@@ -17,7 +17,9 @@ public sealed partial class MainPageViewModel(
     public ObservableCollection<string> Logs { get; set; } = [];
 
     [ObservableProperty]
-    public partial string? State { get; set; }
+    [NotifyPropertyChangedFor(nameof(IsListening))]
+    [NotifyPropertyChangedFor(nameof(IsStopped))]
+    public partial SpeechToTextState State { get; set; } = SpeechToTextState.Stopped;
 
     [ObservableProperty]
     public partial string? RecognitionResult { get; set; }
@@ -25,16 +27,16 @@ public sealed partial class MainPageViewModel(
     [ObservableProperty]
     public partial bool IsOfflineSpeechToText { get; set; }
 
-    [ObservableProperty]
-    public partial bool IsListening { get; set; }
+    public bool IsListening => State == SpeechToTextState.Listening;
+
+    public bool IsStopped => State == SpeechToTextState.Stopped;
 
     private ISpeechToText SpeechToText => IsOfflineSpeechToText ? offlineSpeechToText : onlineSpeechToText;
 
 
     private void SpeechToTextOnStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
     {
-        State = e.State.ToString();
-        IsListening = e.State == SpeechToTextState.Listening;
+        State = e.State;
     }
 
     private void _speechToText_RecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
