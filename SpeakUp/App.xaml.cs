@@ -11,7 +11,31 @@ namespace SpeakUp
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new AppShell());
+            var window = new Window(new AppShell());
+            
+#if WINDOWS
+            const int width = 500;
+            const int height = 800;
+            window.Width = width;
+            window.Height = height;
+            window.MaximumWidth = width;
+            window.MaximumHeight = height;
+            window.MinimumWidth = width;
+            window.MinimumHeight = height;
+#endif
+
+#if MACCATALYST
+            const int width = 500;
+            const int height = 800;
+            window.Width = width;
+            window.Height = height;
+            window.MaximumWidth = width;
+            window.MaximumHeight = height;
+            window.MinimumWidth = width;
+            window.MinimumHeight = height;
+#endif
+            
+            return window;
         }
     }
 }

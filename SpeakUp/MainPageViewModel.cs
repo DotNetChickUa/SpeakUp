@@ -13,6 +13,7 @@ public sealed partial class MainPageViewModel(
     [FromKeyedServices(nameof(OfflineSpeechToTextImplementation))] ISpeechToText offlineSpeechToText) : ObservableObject, IDisposable
 {
     private bool _isSubscribed;
+
     public ObservableCollection<string> Logs { get; set; } = [];
 
     [ObservableProperty]
@@ -24,12 +25,16 @@ public sealed partial class MainPageViewModel(
     [ObservableProperty]
     public partial bool IsOfflineSpeechToText { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsListening { get; set; }
+
     private ISpeechToText SpeechToText => IsOfflineSpeechToText ? offlineSpeechToText : onlineSpeechToText;
 
 
     private void SpeechToTextOnStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
     {
         State = e.State.ToString();
+        IsListening = e.State == SpeechToTextState.Listening;
     }
 
     private void _speechToText_RecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
@@ -64,15 +69,20 @@ public sealed partial class MainPageViewModel(
     [RelayCommand(AllowConcurrentExecutions = false)]
     private async Task StopListen()
     {
-        Unsubscribe();
-        await SpeechToText.StopListenAsync();
+        await StopListening();
         await ExecuteRecognitionResult();
+    }
+    
+    private async Task StopListening()
+    {
+        await SpeechToText.StopListenAsync();
+        Unsubscribe();
     }
 
     [RelayCommand(AllowConcurrentExecutions = false)]
     private async Task SwitchSpeechToText()
     {
-        await StopListen();
+        await StopListening();
 
         IsOfflineSpeechToText = !IsOfflineSpeechToText;
     }
