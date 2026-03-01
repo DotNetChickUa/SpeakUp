@@ -12,7 +12,7 @@
 			<Label Text="SpeakUp Assistant"
 				       FontSize="28"
 				       FontAttributes="Bold"/>
-			<Label Text="{Binding IsOfflineSpeechToText, StringFormat='Mode: {0:Offline|Online}'}"
+			<Label Text="{Binding IsOfflineSpeechToText, Converter={StaticResource ModeConverter}}"
 				       FontSize="14"/>
 		</VerticalStackLayout>
 
