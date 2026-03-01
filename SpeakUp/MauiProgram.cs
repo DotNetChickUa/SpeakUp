@@ -3,6 +3,8 @@ using CommunityToolkit.Maui.Media;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SpeakUp.Executor;
+using SpeakUp.Pages;
+using SpeakUp.Services;
 
 namespace SpeakUp
 {
@@ -26,10 +28,26 @@ namespace SpeakUp
             builder.Logging.AddDebug();
 #endif
 
+            // Services
+            builder.Services.AddSingleton<ISettingsService, SettingsService>();
+            builder.Services.AddSingleton<ICommandHistoryService, CommandHistoryService>();
+            builder.Services.AddSingleton<IPluginInfoService, PluginInfoService>();
+            builder.Services.AddSingleton<IErrorHandlingService, ErrorHandlingService>();
             builder.Services.AddSingleton<IExecutor, McpExecutor>();
+            
+            // Speech to text
             builder.Services.AddKeyedSingleton<ISpeechToText>(nameof(SpeechToTextImplementation), (_, _) => SpeechToText.Default);
             builder.Services.AddKeyedSingleton<ISpeechToText>(nameof(OfflineSpeechToTextImplementation), (_, _) => OfflineSpeechToText.Default);
+            
+            // ViewModels
             builder.Services.AddSingleton<MainPageViewModel>();
+            builder.Services.AddTransient<SettingsPageViewModel>();
+            builder.Services.AddTransient<CommandHistoryPageViewModel>();
+            
+            // Pages
+            builder.Services.AddTransient<SettingsPage>();
+            builder.Services.AddTransient<CommandHistoryPage>();
+
             return builder.Build();
         }
     }

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:SpeakUp.Pages"
+             x:Class="SpeakUp.Pages.SettingsPage"
+             x:DataType="pages:SettingsPageViewModel"
+             Title="Settings">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            
+            <!-- Header -->
+            <Label Text="⚙️ Application Settings"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,10"/>
+
+            <!-- AI Provider Section -->
+            <Border Padding="15" Margin="0,5">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="🤖 AI Provider"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+                    
+                    <Label Text="API Key"
+                           FontSize="12"/>
+                    <Entry Text="{Binding ApiKey}"
+                           Placeholder="Enter your OpenAI API key"
+                           IsPassword="True"/>
+
+                    <Label Text="Model"
+                           FontSize="12"
+                           Margin="0,5,0,0"/>
+                    <Entry Text="{Binding Model}"
+                           Placeholder="gpt-4"/>
+
+                    <Label Text="Custom Endpoint (Optional)"
+                           FontSize="12"
+                           Margin="0,5,0,0"/>
+                    <Entry Text="{Binding CustomEndpoint}"
+                           Placeholder="https://api.openai.com/v1"/>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,5,0,0">
+                        <VerticalStackLayout Grid.Column="0">
+                            <Label Text="Temperature"
+                                   FontSize="12"/>
+                            <Label Text="{Binding Temperature, StringFormat='{0:F2}'}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"/>
+                            <Slider Value="{Binding Temperature}"
+                                    Minimum="0"
+                                    Maximum="2"
+                                    MinimumTrackColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="Max Tokens"
+                                   FontSize="12"/>
+                            <Entry Text="{Binding MaxTokens}"
+                                   Keyboard="Numeric"
+                                   Placeholder="1000"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Speech Recognition Section -->
+            <Border Padding="15" Margin="0,5">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="🎤 Speech Recognition"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Use Offline Recognition"
+                               VerticalOptions="Center"
+                               HorizontalOptions="StartAndExpand"/>
+                        <Switch IsToggled="{Binding UseOfflineRecognition}"/>
+                    </HorizontalStackLayout>
+
+                    <Label Text="Language"
+                           FontSize="12"
+                           Margin="0,5,0,0"/>
+                    <Picker x:Name="LanguagePicker"
+                            SelectedItem="{Binding Language}"
+                            Title="Select Language">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>en-US</x:String>
+                                <x:String>en-GB</x:String>
+                                <x:String>es-ES</x:String>
+                                <x:String>fr-FR</x:String>
+                                <x:String>de-DE</x:String>
+                                <x:String>it-IT</x:String>
+                                <x:String>pt-BR</x:String>
+                                <x:String>zh-CN</x:String>
+                                <x:String>ja-JP</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                    </Picker>
+
+                    <HorizontalStackLayout Spacing="10" Margin="0,5,0,0">
+                        <Label Text="Auto-Execute Commands"
+                               VerticalOptions="Center"
+                               HorizontalOptions="StartAndExpand"/>
+                        <Switch IsToggled="{Binding AutoExecute}"/>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Confirm Destructive Commands"
+                               VerticalOptions="Center"
+                               HorizontalOptions="StartAndExpand"/>
+                        <Switch IsToggled="{Binding ConfirmDestructiveCommands}"/>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Enable Voice Feedback"
+                               VerticalOptions="Center"
+                               HorizontalOptions="StartAndExpand"/>
+                        <Switch IsToggled="{Binding EnableVoiceFeedback}"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Plugin Settings Section -->
+            <Border Padding="15" Margin="0,5">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="🔌 Plugins"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Auto-Load All Plugins"
+                               VerticalOptions="Center"
+                               HorizontalOptions="StartAndExpand"/>
+                        <Switch IsToggled="{Binding AutoLoadPlugins}"/>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Show Plugin Status"
+                               VerticalOptions="Center"
+                               HorizontalOptions="StartAndExpand"/>
+                        <Switch IsToggled="{Binding ShowPluginStatus}"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- General Settings Section -->
+            <Border Padding="15" Margin="0,5">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="⚡ General"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Detailed Logging"
+                               VerticalOptions="Center"
+                               HorizontalOptions="StartAndExpand"/>
+                        <Switch IsToggled="{Binding DetailedLogging}"/>
+                    </HorizontalStackLayout>
+
+                    <Label Text="Max Log Entries"
+                           FontSize="12"
+                           Margin="0,5,0,0"/>
+                    <Entry Text="{Binding MaxLogEntries}"
+                           Keyboard="Numeric"
+                           Placeholder="100"/>
+
+                    <HorizontalStackLayout Spacing="10" Margin="0,5,0,0">
+                        <Label Text="Auto-Save History"
+                               VerticalOptions="Center"
+                               HorizontalOptions="StartAndExpand"/>
+                        <Switch IsToggled="{Binding AutoSaveHistory}"/>
+                    </HorizontalStackLayout>
+
+                    <Label Text="Theme"
+                           FontSize="12"
+                           Margin="0,5,0,0"/>
+                    <Picker x:Name="ThemePicker"
+                            SelectedItem="{Binding Theme}"
+                            Title="Select Theme">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>System</x:String>
+                                <x:String>Light</x:String>
+                                <x:String>Dark</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                    </Picker>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,20,0,0">
+                <Button Grid.Column="0"
+                        Text="💾 Save"
+                        Command="{Binding SaveSettingsCommand}"
+                        IsEnabled="{Binding IsSaving, Converter={StaticResource InvertBoolConverter}}"
+                        CornerRadius="8"
+                        FontAttributes="Bold"
+                        Padding="15"/>
+
+                <Button Grid.Column="1"
+                        Text="🔄 Reset"
+                        Command="{Binding ResetSettingsCommand}"
+                        CornerRadius="8"
+                        FontAttributes="Bold"
+                        Padding="15"/>
+            </Grid>
+
+            <Button Text="← Back"
+                    Command="{Binding NavigateBackCommand}"
+                    CornerRadius="8"
+                    Margin="0,10,0,20"
+                    Padding="15"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
