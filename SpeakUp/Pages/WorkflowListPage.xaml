@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:SpeakUp.Pages"
+             xmlns:models="clr-namespace:SpeakUp.Models"
+             x:Class="SpeakUp.Pages.WorkflowListPage"
+             x:DataType="pages:WorkflowListPageViewModel"
+             Title="Workflows">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="20" RowSpacing="10">
+        
+        <!-- Header -->
+        <Label Grid.Row="0"
+               Text="⚡ Workflow Automation"
+               FontSize="24"
+               FontAttributes="Bold"/>
+
+        <!-- Statistics -->
+        <Border Grid.Row="1" Padding="15">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="10" />
+            </Border.StrokeShape>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
+                    <Label Text="{Binding TotalWorkflows}"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+                    <Label Text="Total"
+                           FontSize="12"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+                
+                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                    <Label Text="{Binding EnabledWorkflows}"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           TextColor="Green"
+                           HorizontalOptions="Center"/>
+                    <Label Text="Enabled"
+                           FontSize="12"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- Search and Filters -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="10" RowDefinitions="Auto,Auto" RowSpacing="10">
+            <!-- Search Bar -->
+            <Border Grid.Column="0" Grid.Row="0" Padding="5">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8" />
+                </Border.StrokeShape>
+                <Entry Text="{Binding SearchText}"
+                       Placeholder="Search workflows..."
+                       VerticalOptions="Center"
+                       Margin="5,0"/>
+            </Border>
+            
+            <Button Grid.Column="1" Grid.Row="0"
+                    Text="➕"
+                    Command="{Binding CreateWorkflowCommand}"
+                    WidthRequest="50"
+                    CornerRadius="8"
+                    FontSize="24"
+                    Padding="0"/>
+
+            <!-- Category Filter -->
+            <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Padding="5">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8" />
+                </Border.StrokeShape>
+                <Picker ItemsSource="{Binding Categories}"
+                        SelectedItem="{Binding SelectedCategory}"
+                        Title="Filter by category"/>
+            </Border>
+        </Grid>
+
+        <!-- Workflows List -->
+        <ScrollView Grid.Row="3">
+            <VerticalStackLayout Spacing="10">
+                
+                <!-- Loading Indicator -->
+                <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                 IsVisible="{Binding IsLoading}"
+                                 VerticalOptions="Center"
+                                 Margin="0,20"/>
+
+                <!-- Workflows Collection -->
+                <CollectionView ItemsSource="{Binding Workflows}"
+                              IsVisible="{Binding IsLoading, Converter={StaticResource InvertBoolConverter}}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Workflow">
+                            <Border Padding="15" Margin="0,5">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+                                
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="5">
+                                    <!-- Icon -->
+                                    <Label Grid.Column="0" Grid.Row="0" Grid.RowSpan="4"
+                                           Text="{Binding Icon}"
+                                           FontSize="40"
+                                           VerticalOptions="Center"/>
+
+                                    <!-- Name and Category -->
+                                    <Label Grid.Column="1" Grid.Row="0"
+                                           Text="{Binding Name}"
+                                           FontSize="18"
+                                           FontAttributes="Bold"/>
+                                    
+                                    <Label Grid.Column="1" Grid.Row="1"
+                                           Text="{Binding Category}"
+                                           FontSize="12"/>
+
+                                    <!-- Description -->
+                                    <Label Grid.Column="1" Grid.Row="2"
+                                           Text="{Binding Description}"
+                                           FontSize="11"
+                                           LineBreakMode="TailTruncation"
+                                           IsVisible="{Binding Description, Converter={StaticResource IsNotNullConverter}}"/>
+
+                                    <!-- Statistics -->
+                                    <HorizontalStackLayout Grid.Column="1" Grid.Row="3" Spacing="15">
+                                        <Label Text="{Binding ExecutionCount, StringFormat='▶ {0} runs'}"
+                                               FontSize="10"/>
+                                        <Label Text="{Binding AverageDurationMs, StringFormat='⏱ {0}ms avg'}"
+                                               FontSize="10"
+                                               IsVisible="{Binding ExecutionCount, Converter={StaticResource IsNotNullConverter}}"/>
+                                    </HorizontalStackLayout>
+
+                                    <!-- Actions -->
+                                    <VerticalStackLayout Grid.Column="2" Grid.Row="0" Grid.RowSpan="4" Spacing="5">
+                                        <!-- Play Button -->
+                                        <Button Text="▶"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type pages:WorkflowListPageViewModel}}, Path=ExecuteWorkflowCommand}"
+                                               CommandParameter="{Binding .}"
+                                               WidthRequest="40"
+                                               HeightRequest="40"
+                                               CornerRadius="20"
+                                               FontSize="16"
+                                               Padding="0"
+                                               IsEnabled="{Binding IsEnabled}"/>
+                                        
+                                        <!-- Edit Button -->
+                                        <Button Text="✏️"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type pages:WorkflowListPageViewModel}}, Path=EditWorkflowCommand}"
+                                               CommandParameter="{Binding .}"
+                                               WidthRequest="40"
+                                               HeightRequest="40"
+                                               CornerRadius="20"
+                                               FontSize="16"
+                                               Padding="0"/>
+                                        
+                                        <!-- Enable/Disable Toggle -->
+                                        <Switch IsToggled="{Binding IsEnabled}"
+                                               VerticalOptions="Center"
+                                               Margin="0,5,0,0">
+                                            <Switch.GestureRecognizers>
+                                                <TapGestureRecognizer 
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type pages:WorkflowListPageViewModel}}, Path=ToggleWorkflowCommand}"
+                                                    CommandParameter="{Binding .}"/>
+                                            </Switch.GestureRecognizers>
+                                        </Switch>
+                                    </VerticalStackLayout>
+                                    
+                                    <!-- Swipe Actions -->
+                                    <Border.GestureRecognizers>
+                                        <SwipeGestureRecognizer Direction="Left" 
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type pages:WorkflowListPageViewModel}}, Path=DeleteWorkflowCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                    </Border.GestureRecognizers>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <ContentView>
+                            <VerticalStackLayout HorizontalOptions="Center"
+                                               VerticalOptions="Center"
+                                               Padding="20">
+                                <Label Text="⚡"
+                                       FontSize="48"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="No workflows yet"
+                                       FontSize="16"
+                                       HorizontalOptions="Center"
+                                       Margin="0,10,0,0"/>
+                                <Label Text="Tap ➕ to create your first automation workflow"
+                                       FontSize="12"
+                                       HorizontalOptions="Center"
+                                       Margin="0,5,0,0"/>
+                            </VerticalStackLayout>
+                        </ContentView>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+                
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Back Button -->
+        <Button Grid.Row="4"
+                Text="← Back"
+                Command="{Binding NavigateBackCommand}"
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,10,0,0"/>
+
+    </Grid>
+</ContentPage>

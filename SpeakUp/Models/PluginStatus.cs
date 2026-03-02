@@ -3,7 +3,7 @@ namespace SpeakUp.Models;
 /// <summary>
 /// Plugin status information
 /// </summary>
-public sealed class PluginStatus
+public class PluginStatus
 {
     /// <summary>
     /// Plugin name

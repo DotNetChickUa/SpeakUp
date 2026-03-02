@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:SpeakUp.Pages"
+             xmlns:models="clr-namespace:SpeakUp.Models"
+             x:Class="SpeakUp.Pages.PluginManagerPage"
+             x:DataType="pages:PluginManagerPageViewModel"
+             Title="Plugin Manager">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="20" RowSpacing="10">
+        
+        <!-- Header -->
+        <Label Grid.Row="0"
+               Text="🔌 Plugin Manager"
+               FontSize="24"
+               FontAttributes="Bold"/>
+
+        <!-- Statistics -->
+        <Border Grid.Row="1" Padding="15">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="10" />
+            </Border.StrokeShape>
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
+                    <Label Text="{Binding TotalPlugins}"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+                    <Label Text="Total"
+                           FontSize="12"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+                
+                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                    <Label Text="{Binding EnabledPlugins}"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           TextColor="Green"
+                           HorizontalOptions="Center"/>
+                    <Label Text="Enabled"
+                           FontSize="12"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+                
+                <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center">
+                    <Label Text="{Binding TotalCommands}"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+                    <Label Text="Commands"
+                           FontSize="12"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- Search and Filters -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="10" RowDefinitions="Auto,Auto" RowSpacing="10">
+            <!-- Search Bar -->
+            <Border Grid.Column="0" Grid.Row="0" Padding="5">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8" />
+                </Border.StrokeShape>
+                <Entry Text="{Binding SearchText}"
+                       Placeholder="Search plugins..."
+                       VerticalOptions="Center"
+                       Margin="5,0"/>
+            </Border>
+            
+            <Button Grid.Column="1" Grid.Row="0"
+                    Text="🔄"
+                    Command="{Binding RefreshPluginsCommand}"
+                    WidthRequest="50"
+                    CornerRadius="8"
+                    FontSize="20"
+                    Padding="0"/>
+
+            <!-- Category Filter -->
+            <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Padding="5">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8" />
+                </Border.StrokeShape>
+                <Picker ItemsSource="{Binding Categories}"
+                        SelectedItem="{Binding SelectedCategory}"
+                        Title="Filter by category"/>
+            </Border>
+        </Grid>
+
+        <!-- Plugins List -->
+        <ScrollView Grid.Row="3">
+            <VerticalStackLayout Spacing="10">
+                
+                <!-- Bulk Actions -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,0,0,10">
+                    <Button Grid.Column="0"
+                            Text="✅ Enable All"
+                            Command="{Binding EnableAllPluginsCommand}"
+                            CornerRadius="8"
+                            FontSize="14"
+                            Padding="10"/>
+                    <Button Grid.Column="1"
+                            Text="⏸️ Disable All"
+                            Command="{Binding DisableAllPluginsCommand}"
+                            CornerRadius="8"
+                            FontSize="14"
+                            Padding="10"/>
+                </Grid>
+
+                <!-- Loading Indicator -->
+                <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                 IsVisible="{Binding IsLoading}"
+                                 VerticalOptions="Center"
+                                 Margin="0,20"/>
+
+                <!-- Plugins Collection -->
+                <CollectionView ItemsSource="{Binding FilteredPlugins}"
+                              IsVisible="{Binding IsLoading, Converter={StaticResource InvertBoolConverter}}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:PluginInfo">
+                            <Border Padding="15" Margin="0,5">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type pages:PluginManagerPageViewModel}}, Path=TogglePluginCommand}"
+                                        CommandParameter="{Binding .}"/>
+                                </Border.GestureRecognizers>
+                                
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15">
+                                    <!-- Icon -->
+                                    <Label Grid.Column="0"
+                                           Text="{Binding Icon}"
+                                           FontSize="32"
+                                           VerticalOptions="Center"/>
+
+                                    <!-- Info -->
+                                    <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                        <Label Text="{Binding Name}"
+                                               FontSize="16"
+                                               FontAttributes="Bold"/>
+                                        <Label Text="{Binding Category}"
+                                               FontSize="12"/>
+                                        <Label Text="{Binding Description}"
+                                               FontSize="11"
+                                               LineBreakMode="TailTruncation"/>
+                                        <HorizontalStackLayout Spacing="10">
+                                            <Label Text="{Binding CommandCount, StringFormat='{0} commands'}"
+                                                   FontSize="10"/>
+                                            <Label Text="{Binding Version, StringFormat='v{0}'}"
+                                                   FontSize="10"/>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+
+                                    <!-- Toggle Switch -->
+                                    <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="5">
+                                        <Switch IsToggled="{Binding IsEnabled}"
+                                               VerticalOptions="Center"/>
+                                        <Label Text="{Binding StatusText}"
+                                               FontSize="10"
+                                               HorizontalOptions="Center"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <ContentView>
+                            <VerticalStackLayout HorizontalOptions="Center"
+                                               VerticalOptions="Center"
+                                               Padding="20">
+                                <Label Text="🔍"
+                                       FontSize="48"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="No plugins found"
+                                       FontSize="16"
+                                       HorizontalOptions="Center"
+                                       Margin="0,10,0,0"/>
+                            </VerticalStackLayout>
+                        </ContentView>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+                
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Back Button -->
+        <Button Grid.Row="4"
+                Text="← Back"
+                Command="{Binding NavigateBackCommand}"
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,10,0,0"/>
+
+    </Grid>
+</ContentPage>

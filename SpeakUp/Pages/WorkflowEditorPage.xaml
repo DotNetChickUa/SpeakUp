@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:SpeakUp.Pages"
+             xmlns:models="clr-namespace:SpeakUp.Models"
+             x:Class="SpeakUp.Pages.WorkflowEditorPage"
+             x:DataType="pages:WorkflowEditorPageViewModel"
+             Title="Workflow Editor">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            
+            <!-- Header -->
+            <Label Text="⚡ Workflow Editor"
+                   FontSize="24"
+                   FontAttributes="Bold"/>
+
+            <!-- Workflow Details -->
+            <Border Padding="15">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
+                    <Label Grid.Row="0"
+                           Text="Workflow Details"
+                           FontSize="16"
+                           FontAttributes="Bold"/>
+
+                    <!-- Name -->
+                    <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Grid.Column="0"
+                               Text="{Binding WorkflowIcon}"
+                               FontSize="24"
+                               VerticalOptions="Center"/>
+                        <Entry Grid.Column="1"
+                               Text="{Binding WorkflowName}"
+                               Placeholder="Workflow name"
+                               FontSize="18"
+                               FontAttributes="Bold"/>
+                    </Grid>
+
+                    <!-- Description -->
+                    <Entry Grid.Row="2"
+                           Text="{Binding WorkflowDescription}"
+                           Placeholder="Description (optional)"
+                           FontSize="14"/>
+
+                    <!-- Category -->
+                    <Picker Grid.Row="3"
+                            ItemsSource="{Binding Categories}"
+                            SelectedItem="{Binding WorkflowCategory}"
+                            Title="Category"/>
+
+                    <!-- Enable Toggle -->
+                    <HorizontalStackLayout Grid.Row="4" Spacing="10">
+                        <Label Text="Enabled"
+                               VerticalOptions="Center"/>
+                        <Switch IsToggled="{Binding IsWorkflowEnabled}"/>
+                    </HorizontalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Steps Section -->
+            <Border Padding="15">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                               Text="Steps"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center"/>
+                        <Button Grid.Column="1"
+                                Text="➕"
+                                Command="{Binding AddStepCommand}"
+                                WidthRequest="40"
+                                HeightRequest="40"
+                                CornerRadius="20"
+                                FontSize="20"
+                                Padding="0"/>
+                    </Grid>
+
+                    <!-- Quick Add Buttons -->
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="5" Margin="0,5">
+                        <Button Grid.Column="0"
+                                Text="📝 Command"
+                                Command="{Binding QuickAddCommandStepCommand}"
+                                FontSize="11"
+                                Padding="8"
+                                CornerRadius="6"/>
+                        <Button Grid.Column="1"
+                                Text="⏱️ Delay"
+                                Command="{Binding QuickAddDelayStepCommand}"
+                                FontSize="11"
+                                Padding="8"
+                                CornerRadius="6"/>
+                        <Button Grid.Column="2"
+                                Text="📋 Log"
+                                Command="{Binding QuickAddLogStepCommand}"
+                                FontSize="11"
+                                Padding="8"
+                                CornerRadius="6"/>
+                    </Grid>
+
+                    <BoxView HeightRequest="1" 
+                             Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                             Margin="0,5"/>
+
+                    <!-- Steps List -->
+                    <CollectionView ItemsSource="{Binding Steps}"
+                                    MinimumHeightRequest="100">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:WorkflowStep">
+                                <Border Padding="10" Margin="0,5">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8" />
+                                    </Border.StrokeShape>
+                                    
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" RowDefinitions="Auto,Auto" RowSpacing="5">
+                                        <!-- Order Number -->
+                                        <Border Grid.Column="0" Grid.RowSpan="2"
+                                                WidthRequest="30"
+                                                HeightRequest="30"
+                                                VerticalOptions="Center"
+                                                Padding="5">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="15" />
+                                            </Border.StrokeShape>
+                                            <Label Text="{Binding Order, StringFormat='{0}'}"
+                                                   FontSize="12"
+                                                   FontAttributes="Bold"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"/>
+                                        </Border>
+
+                                        <!-- Step Info -->
+                                        <VerticalStackLayout Grid.Column="1" Grid.Row="0" Spacing="2">
+                                            <Label Text="{Binding Name}"
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"/>
+                                            <HorizontalStackLayout Spacing="5">
+                                                <Label Text="{Binding StepType}"
+                                                       FontSize="11"
+                                                       TextColor="Gray"/>
+                                                <Label Text="{Binding Action}"
+                                                       FontSize="10"
+                                                       TextColor="Gray"
+                                                       LineBreakMode="TailTruncation"
+                                                       MaximumWidthRequest="150"
+                                                       IsVisible="{Binding Action, Converter={StaticResource IsNotNullConverter}}"/>
+                                            </HorizontalStackLayout>
+                                        </VerticalStackLayout>
+
+                                        <!-- Actions -->
+                                        <HorizontalStackLayout Grid.Column="2" Grid.RowSpan="2" Spacing="5" VerticalOptions="Center">
+                                            <Button Text="↑"
+                                                   Command="{Binding Source={RelativeSource AncestorType={x:Type pages:WorkflowEditorPageViewModel}}, Path=MoveStepUpCommand}"
+                                                   CommandParameter="{Binding .}"
+                                                   WidthRequest="35"
+                                                   HeightRequest="35"
+                                                   CornerRadius="17"
+                                                   FontSize="14"
+                                                   Padding="0"/>
+                                            <Button Text="↓"
+                                                   Command="{Binding Source={RelativeSource AncestorType={x:Type pages:WorkflowEditorPageViewModel}}, Path=MoveStepDownCommand}"
+                                                   CommandParameter="{Binding .}"
+                                                   WidthRequest="35"
+                                                   HeightRequest="35"
+                                                   CornerRadius="17"
+                                                   FontSize="14"
+                                                   Padding="0"/>
+                                            <Button Text="✏️"
+                                                   Command="{Binding Source={RelativeSource AncestorType={x:Type pages:WorkflowEditorPageViewModel}}, Path=EditStepCommand}"
+                                                   CommandParameter="{Binding .}"
+                                                   WidthRequest="35"
+                                                   HeightRequest="35"
+                                                   CornerRadius="17"
+                                                   FontSize="14"
+                                                   Padding="0"/>
+                                            <Button Text="🗑️"
+                                                   Command="{Binding Source={RelativeSource AncestorType={x:Type pages:WorkflowEditorPageViewModel}}, Path=DeleteStepCommand}"
+                                                   CommandParameter="{Binding .}"
+                                                   WidthRequest="35"
+                                                   HeightRequest="35"
+                                                   CornerRadius="17"
+                                                   FontSize="14"
+                                                   Padding="0"/>
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        <CollectionView.EmptyView>
+                            <ContentView>
+                                <VerticalStackLayout HorizontalOptions="Center"
+                                                   VerticalOptions="Center"
+                                                   Padding="20">
+                                    <Label Text="No steps yet"
+                                           FontSize="14"
+                                           HorizontalOptions="Center"/>
+                                    <Label Text="Tap ➕ or quick buttons to add steps"
+                                           FontSize="11"
+                                           TextColor="Gray"
+                                           HorizontalOptions="Center"
+                                           Margin="0,5,0,0"/>
+                                </VerticalStackLayout>
+                            </ContentView>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Triggers Section -->
+            <Border Padding="15">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                               Text="Triggers"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center"/>
+                        <Button Grid.Column="1"
+                                Text="➕"
+                                Command="{Binding AddTriggerCommand}"
+                                WidthRequest="40"
+                                HeightRequest="40"
+                                CornerRadius="20"
+                                FontSize="20"
+                                Padding="0"/>
+                    </Grid>
+
+                    <BoxView HeightRequest="1" 
+                             Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                             Margin="0,5"/>
+
+                    <!-- Triggers List -->
+                    <CollectionView ItemsSource="{Binding Triggers}"
+                                    MinimumHeightRequest="80">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:WorkflowTrigger">
+                                <Border Padding="10" Margin="0,5">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8" />
+                                    </Border.StrokeShape>
+                                    
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                            <Label Text="{Binding TriggerType}"
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"/>
+                                            <Label Text="{Binding VoiceKeywords}"
+                                                   FontSize="11"
+                                                   TextColor="Gray"
+                                                   IsVisible="{Binding VoiceKeywords, Converter={StaticResource IsNotNullConverter}}"/>
+                                        </VerticalStackLayout>
+
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                                            <Switch IsToggled="{Binding IsEnabled}"/>
+                                            <Button Text="🗑️"
+                                                   Command="{Binding Source={RelativeSource AncestorType={x:Type pages:WorkflowEditorPageViewModel}}, Path=DeleteTriggerCommand}"
+                                                   CommandParameter="{Binding .}"
+                                                   WidthRequest="35"
+                                                   HeightRequest="35"
+                                                   CornerRadius="17"
+                                                   FontSize="14"
+                                                   Padding="0"/>
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        <CollectionView.EmptyView>
+                            <ContentView>
+                                <VerticalStackLayout HorizontalOptions="Center"
+                                                   VerticalOptions="Center"
+                                                   Padding="20">
+                                    <Label Text="No triggers configured"
+                                           FontSize="14"
+                                           HorizontalOptions="Center"/>
+                                    <Label Text="Manual execution only"
+                                           FontSize="11"
+                                           TextColor="Gray"
+                                           HorizontalOptions="Center"
+                                           Margin="0,5,0,0"/>
+                                </VerticalStackLayout>
+                            </ContentView>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,10,0,0">
+                <Button Grid.Column="0"
+                        Text="✓ Validate"
+                        Command="{Binding ValidateWorkflowCommand}"
+                        CornerRadius="8"
+                        Padding="12"/>
+                <Button Grid.Column="1"
+                        Text="▶ Test Run"
+                        Command="{Binding TestWorkflowCommand}"
+                        IsEnabled="{Binding IsTestRunning, Converter={StaticResource InvertBoolConverter}}"
+                        CornerRadius="8"
+                        Padding="12"/>
+            </Grid>
+
+            <Button Text="💾 Save Workflow"
+                    Command="{Binding SaveWorkflowCommand}"
+                    IsEnabled="{Binding IsLoading, Converter={StaticResource InvertBoolConverter}}"
+                    CornerRadius="8"
+                    FontAttributes="Bold"
+                    Padding="15"/>
+
+            <Button Text="← Back"
+                    Command="{Binding NavigateBackCommand}"
+                    CornerRadius="8"
+                    Padding="15"
+                    Margin="0,0,0,20"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

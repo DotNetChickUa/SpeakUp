@@ -13,9 +13,19 @@
         Route="MainPage" />
 
     <ShellContent
+        Title="Workflows"
+        ContentTemplate="{DataTemplate pages:WorkflowListPage}"
+        Route="WorkflowListPage" />
+
+    <ShellContent
         Title="History"
         ContentTemplate="{DataTemplate pages:CommandHistoryPage}"
         Route="CommandHistoryPage" />
+
+    <ShellContent
+        Title="Plugins"
+        ContentTemplate="{DataTemplate pages:PluginManagerPage}"
+        Route="PluginManagerPage" />
 
     <ShellContent
         Title="Settings"

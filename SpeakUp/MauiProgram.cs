@@ -32,7 +32,10 @@ namespace SpeakUp
             builder.Services.AddSingleton<ISettingsService, SettingsService>();
             builder.Services.AddSingleton<ICommandHistoryService, CommandHistoryService>();
             builder.Services.AddSingleton<IPluginInfoService, PluginInfoService>();
+            builder.Services.AddSingleton<IPluginManagerService, PluginManagerService>();
             builder.Services.AddSingleton<IErrorHandlingService, ErrorHandlingService>();
+            builder.Services.AddSingleton<IWorkflowService, WorkflowService>();
+            builder.Services.AddSingleton<IWorkflowExecutionService, WorkflowExecutionService>();
             builder.Services.AddSingleton<IExecutor, McpExecutor>();
             
             // Speech to text
@@ -43,10 +46,16 @@ namespace SpeakUp
             builder.Services.AddSingleton<MainPageViewModel>();
             builder.Services.AddTransient<SettingsPageViewModel>();
             builder.Services.AddTransient<CommandHistoryPageViewModel>();
+            builder.Services.AddTransient<PluginManagerPageViewModel>();
+            builder.Services.AddTransient<WorkflowListPageViewModel>();
+            builder.Services.AddTransient<WorkflowEditorPageViewModel>();
             
             // Pages
             builder.Services.AddTransient<SettingsPage>();
             builder.Services.AddTransient<CommandHistoryPage>();
+            builder.Services.AddTransient<PluginManagerPage>();
+            builder.Services.AddTransient<WorkflowListPage>();
+            builder.Services.AddTransient<WorkflowEditorPage>();
 
             return builder.Build();
         }
