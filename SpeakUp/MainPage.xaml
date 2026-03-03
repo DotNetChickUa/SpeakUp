@@ -7,51 +7,24 @@
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False">
 
-	<Grid Padding="20" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="10">
-		<Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-			<VerticalStackLayout Spacing="10" Grid.Column="0">
-				<Label Text="SpeakUp Assistant"
+	<Grid Padding="20" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="10">
+		<VerticalStackLayout Grid.Row="0"  Spacing="10" Grid.Column="0">
+			<Label Text="SpeakUp Assistant"
 					       FontSize="28"
 					       FontAttributes="Bold"/>
-				<Label Text="{Binding IsOfflineSpeechToText, Converter={StaticResource ModeConverter}}"
+			<Label Text="{Binding IsOfflineSpeechToText, Converter={StaticResource ModeConverter}}"
 					       FontSize="14"/>
-			</VerticalStackLayout>
-			
-			<Button Grid.Column="1"
-			        Text="⚙️"
-			        FontSize="24"
-			        Command="{Binding NavigateToSettingsCommand}"
-			        WidthRequest="60"
-			        HeightRequest="60"
-			        CornerRadius="30"
-			        Padding="0"
-			        VerticalOptions="Start"/>
-		</Grid>
-
-		<!-- Plugin Status Indicator -->
-		<Border Padding="12"
-		       Grid.Row="1"
-		       IsVisible="{Binding ShowPluginStatus}">
-			<Border.StrokeShape>
-				<RoundRectangle CornerRadius="8" />
-			</Border.StrokeShape>
-			<HorizontalStackLayout Spacing="15">
-				<Label Text="🔌"
-				       FontSize="20"
-				       VerticalOptions="Center"/>
-				<VerticalStackLayout Spacing="2">
-					<Label Text="{Binding PluginCount, StringFormat='{0} Plugins Loaded'}"
-					       FontSize="14"
-					       FontAttributes="Bold"/>
-					<Label Text="{Binding CommandCount, StringFormat='{0} commands available'}"
-					       FontSize="12"/>
-				</VerticalStackLayout>
-			</HorizontalStackLayout>
-		</Border>
+			<Button Text="🔄 Switch Mode"
+			        Command="{Binding SwitchSpeechToTextCommand}"
+			        CornerRadius="8"
+			        FontAttributes="Bold"
+			        FontSize="16"
+			        Padding="10"/>
+		</VerticalStackLayout>
 
 		<!-- State Indicator -->
 		<Border Padding="15"
-                       Grid.Row="2">
+                       Grid.Row="1">
 			<Border.StrokeShape>
 				<RoundRectangle CornerRadius="10" />
 			</Border.StrokeShape>
@@ -72,7 +45,7 @@
 		</Border>
 
 		<!-- Control Buttons -->
-		<Grid ColumnDefinitions="*,*" ColumnSpacing="10" Grid.Row="3">
+		<Grid ColumnDefinitions="*,*" ColumnSpacing="10" Grid.Row="2">
 			<Button Grid.Column="0"
                             Text="🎤 Start"
                             Command="{Binding StartListenCommand}"
@@ -92,16 +65,8 @@
                             Padding="10"/>
 		</Grid>
 
-		<Button Text="🔄 Switch Mode"
-				Grid.Row="4"
-                        Command="{Binding SwitchSpeechToTextCommand}"
-                        CornerRadius="8"
-                        FontAttributes="Bold"
-                        FontSize="16"
-                        Padding="10"/>
-
 		<!-- Recognition Result -->
-		<Border Grid.Row="5"
+		<Border Grid.Row="3"
 		       Padding="15"
 		       IsVisible="{Binding RecognitionResult, Converter={StaticResource IsNotNullConverter}}">
 			<Border.StrokeShape>
@@ -116,16 +81,16 @@
 				       LineBreakMode="WordWrap"/>
 			</VerticalStackLayout>
 		</Border>
-		
-		<!-- Logs Section -->
-		<Label Text="Activity Log"
-				Grid.Row="6"
-                       FontSize="14"
-                       FontAttributes="Bold"
-                       Margin="0,10,0,0"/>
 
+		<!-- Logs Section -->
 		<CollectionView ItemsSource="{Binding Logs}"
-				Grid.Row="7">
+				Grid.Row="4">
+			<CollectionView.Header>
+				<Label Text="Activity Log"
+                       FontSize="14"
+                       FontAttributes="Bold"/>
+
+			</CollectionView.Header>
 			<CollectionView.ItemTemplate>
 				<DataTemplate x:DataType="x:String">
 					<Border Padding="12"
