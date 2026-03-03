@@ -63,7 +63,6 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-rc2" />
 		<PackageReference Include="Microsoft.Agents.AI.Workflows" Version="1.0.0-rc2" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.41" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
@@ -73,11 +72,4 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Shared\Shared.csproj" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="appsettings*.json">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	</ItemGroup>
-
 </Project>

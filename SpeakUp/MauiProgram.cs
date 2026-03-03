@@ -1,6 +1,5 @@
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Media;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SpeakUp.Executor;
 using SpeakUp.Pages;
@@ -21,9 +20,7 @@ namespace SpeakUp
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
-            builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-            builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
-
+         
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
