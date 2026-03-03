@@ -53,7 +53,7 @@ internal sealed class ErrorHandlingService : IErrorHandlingService
 
         await Application.Current!.Dispatcher.DispatchAsync(async () =>
         {
-            await Shell.Current.DisplayAlert(title, message, "OK");
+            await Shell.Current.DisplayAlertAsync(title, message, "OK");
         });
     }
 
@@ -94,7 +94,7 @@ internal sealed class ErrorHandlingService : IErrorHandlingService
         
         return await Application.Current!.Dispatcher.DispatchAsync(async () =>
         {
-            return await Shell.Current.DisplayAlert(
+            return await Shell.Current.DisplayAlertAsync(
                 "⚠️ Confirm Action",
                 message,
                 "Continue",

@@ -61,7 +61,7 @@ public sealed partial class CommandHistoryPageViewModel(ICommandHistoryService h
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", $"Failed to load commands: {ex.Message}", "OK");
+            await Shell.Current.DisplayAlertAsync("Error", $"Failed to load commands: {ex.Message}", "OK");
         }
         finally
         {
@@ -84,7 +84,7 @@ public sealed partial class CommandHistoryPageViewModel(ICommandHistoryService h
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", $"Failed to load sessions: {ex.Message}", "OK");
+            await Shell.Current.DisplayAlertAsync("Error", $"Failed to load sessions: {ex.Message}", "OK");
         }
     }
 
@@ -117,7 +117,7 @@ public sealed partial class CommandHistoryPageViewModel(ICommandHistoryService h
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", $"Failed to search commands: {ex.Message}", "OK");
+            await Shell.Current.DisplayAlertAsync("Error", $"Failed to search commands: {ex.Message}", "OK");
         }
         finally
         {
@@ -148,7 +148,7 @@ public sealed partial class CommandHistoryPageViewModel(ICommandHistoryService h
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", $"Failed to load session commands: {ex.Message}", "OK");
+            await Shell.Current.DisplayAlertAsync("Error", $"Failed to load session commands: {ex.Message}", "OK");
         }
         finally
         {
@@ -159,7 +159,7 @@ public sealed partial class CommandHistoryPageViewModel(ICommandHistoryService h
     [RelayCommand]
     private async Task DeleteOldCommandsAsync()
     {
-        var confirm = await Shell.Current.DisplayAlert(
+        var confirm = await Shell.Current.DisplayAlertAsync(
             "Delete Old Commands",
             "Delete commands older than 30 days?",
             "Delete",
@@ -173,12 +173,12 @@ public sealed partial class CommandHistoryPageViewModel(ICommandHistoryService h
         try
         {
             var deleted = await historyService.DeleteOldCommandsAsync(30);
-            await Shell.Current.DisplayAlert("Success", $"Deleted {deleted} old commands", "OK");
+            await Shell.Current.DisplayAlertAsync("Success", $"Deleted {deleted} old commands", "OK");
             await LoadRecentCommandsAsync();
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", $"Failed to delete commands: {ex.Message}", "OK");
+            await Shell.Current.DisplayAlertAsync("Error", $"Failed to delete commands: {ex.Message}", "OK");
         }
     }
 
@@ -208,11 +208,11 @@ public sealed partial class CommandHistoryPageViewModel(ICommandHistoryService h
                 File = new ShareFile(filePath)
             });
             
-            await Shell.Current.DisplayAlert("Success", "Command history exported successfully", "OK");
+            await Shell.Current.DisplayAlertAsync("Success", "Command history exported successfully", "OK");
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", $"Failed to export logs: {ex.Message}", "OK");
+            await Shell.Current.DisplayAlertAsync("Error", $"Failed to export logs: {ex.Message}", "OK");
         }
     }
 

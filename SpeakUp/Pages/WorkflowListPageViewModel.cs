@@ -122,7 +122,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
             await _workflowService.SaveWorkflowAsync(workflow);
             await LoadWorkflowsAsync();
 
-            await Shell.Current.DisplayAlert("Success", $"Workflow '{name}' created", "OK");
+            await Shell.Current.DisplayAlertAsync("Success", $"Workflow '{name}' created", "OK");
         }
         catch (Exception ex)
         {
@@ -146,7 +146,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
                 ? $"Workflow completed successfully!\n\nDuration: {result.Duration.TotalSeconds:F2}s\nSteps: {result.StepsExecuted}"
                 : $"Workflow failed!\n\n{result.ErrorMessage}\n\nSteps completed: {result.StepsExecuted}";
 
-            await Shell.Current.DisplayAlert(
+            await Shell.Current.DisplayAlertAsync(
                 result.Success ? "✓ Success" : "✗ Failed",
                 message,
                 "OK");
@@ -194,7 +194,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
             Workflows.Remove(workflow);
             UpdateStatistics();
 
-            await Shell.Current.DisplayAlert("Success", $"Workflow '{workflow.Name}' deleted", "OK");
+            await Shell.Current.DisplayAlertAsync("Success", $"Workflow '{workflow.Name}' deleted", "OK");
         }
         catch (Exception ex)
         {
@@ -236,11 +236,11 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
 
             if (isValid)
             {
-                await Shell.Current.DisplayAlert("✓ Valid", $"Workflow '{workflow.Name}' is valid", "OK");
+                await Shell.Current.DisplayAlertAsync("✓ Valid", $"Workflow '{workflow.Name}' is valid", "OK");
             }
             else
             {
-                await Shell.Current.DisplayAlert(
+                await Shell.Current.DisplayAlertAsync(
                     "✗ Invalid",
                     $"Workflow '{workflow.Name}' has errors:\n\n{string.Join("\n", errors)}",
                     "OK");

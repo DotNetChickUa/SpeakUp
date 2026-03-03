@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using OpenAI;
 using OpenAI.Chat;
 using Shared;
+using SpeakUp.Plugins;
 using System.ClientModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -103,21 +104,13 @@ internal class McpExecutor : IExecutor, IDisposable
 
     private PluginLoadResult LoadTools()
     {
-        var pluginsPath = Path.Combine(AppContext.BaseDirectory, "Plugins");
-        var pluginFiles = Directory.Exists(pluginsPath)
-            ? Directory.GetFiles(pluginsPath, "*.dll", SearchOption.AllDirectories)
-            : Array.Empty<string>();
+        var pluginFiles = PluginDiscovery.GetManagedPluginFiles();
 
         var tools = new List<AITool>();
         var loadContexts = new List<PluginLoadContext>();
 
         foreach (var pluginFile in pluginFiles)
         {
-            if (!IsManagedAssembly(pluginFile))
-            {
-                continue;
-            }
-
             try
             {
                 var loadContext = new PluginLoadContext(pluginFile);
@@ -160,27 +153,6 @@ internal class McpExecutor : IExecutor, IDisposable
 
         _logger.LogInformation("Loaded {Count} tools from {ContextCount} plugin contexts", tools.Count, loadContexts.Count);
         return new PluginLoadResult(tools, loadContexts);
-    }
-
-    private static bool IsManagedAssembly(string path)
-    {
-        try
-        {
-            _ = AssemblyName.GetAssemblyName(path);
-            return true;
-        }
-        catch (BadImageFormatException)
-        {
-            return false;
-        }
-        catch (FileLoadException)
-        {
-            return false;
-        }
-        catch (FileNotFoundException)
-        {
-            return false;
-        }
     }
 
     private static object? GetArgumentValueForInput(object? existingValue, string? input)

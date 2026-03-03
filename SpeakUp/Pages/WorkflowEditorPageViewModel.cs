@@ -166,7 +166,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
                 await _workflowService.SaveWorkflowTriggerAsync(trigger);
             }
 
-            await Shell.Current.DisplayAlert("Success", "Workflow saved successfully", "OK");
+            await Shell.Current.DisplayAlertAsync("Success", "Workflow saved successfully", "OK");
         }
         catch (Exception ex)
         {
@@ -217,7 +217,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
         SelectedStep = step;
         
         // Navigate to step details (could be a separate page or a sheet)
-        await Shell.Current.DisplayAlert(
+        await Shell.Current.DisplayAlertAsync(
             "Edit Step",
             $"Step editor for '{step.Name}'\n\nType: {step.StepType}\nAction: {step.Action}",
             "OK");
@@ -231,7 +231,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
             return;
         }
 
-        var confirm = await Shell.Current.DisplayAlert(
+        var confirm = await Shell.Current.DisplayAlertAsync(
             "Delete Step",
             $"Delete step '{step.Name}'?",
             "Delete",
@@ -317,7 +317,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
 
         Triggers.Add(trigger);
 
-        await Shell.Current.DisplayAlert(
+        await Shell.Current.DisplayAlertAsync(
             "Trigger Added",
             "Configure the trigger properties in the Triggers section",
             "OK");
@@ -331,7 +331,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
             return;
         }
 
-        var confirm = await Shell.Current.DisplayAlert(
+        var confirm = await Shell.Current.DisplayAlertAsync(
             "Delete Trigger",
             "Delete this trigger?",
             "Delete",
@@ -369,14 +369,14 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
 
             if (isValid)
             {
-                await Shell.Current.DisplayAlert(
+                await Shell.Current.DisplayAlertAsync(
                     "✓ Valid",
                     "Workflow is valid and ready to execute",
                     "OK");
             }
             else
             {
-                await Shell.Current.DisplayAlert(
+                await Shell.Current.DisplayAlertAsync(
                     "✗ Invalid",
                     $"Workflow has errors:\n\n{string.Join("\n", errors)}",
                     "OK");
@@ -409,7 +409,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
                 ? $"✓ Test passed!\n\nDuration: {result.Duration.TotalSeconds:F2}s\nSteps: {result.StepsExecuted}\n\nLog:\n{string.Join("\n", result.Log.TakeLast(5))}"
                 : $"✗ Test failed!\n\n{result.ErrorMessage}\n\nSteps completed: {result.StepsExecuted}\n\nLog:\n{string.Join("\n", result.Log.TakeLast(5))}";
 
-            await Shell.Current.DisplayAlert(
+            await Shell.Current.DisplayAlertAsync(
                 result.Success ? "Test Successful" : "Test Failed",
                 message,
                 "OK");
@@ -431,7 +431,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
         
         if (hasChanges)
         {
-            var confirm = await Shell.Current.DisplayAlert(
+            var confirm = await Shell.Current.DisplayAlertAsync(
                 "Unsaved Changes",
                 "Save changes before leaving?",
                 "Save",

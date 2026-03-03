@@ -10,55 +10,55 @@ public sealed partial class SettingsPageViewModel(ISettingsService settingsServi
     private AppSettings _currentSettings = new();
 
     [ObservableProperty]
-    private string _apiKey = string.Empty;
+    public partial string ApiKey { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _model = "gpt-4";
+    public partial string Model { get; set; } = "gpt-4";
 
     [ObservableProperty]
-    private string? _customEndpoint;
+    public partial string? CustomEndpoint { get; set; }
 
     [ObservableProperty]
-    private double _temperature = 0.7;
+    public partial double Temperature { get; set; } = 0.7;
 
     [ObservableProperty]
-    private int _maxTokens = 1000;
+    public partial int MaxTokens { get; set; } = 1000;
 
     [ObservableProperty]
-    private bool _useOfflineRecognition;
+    public partial bool UseOfflineRecognition { get; set; }
 
     [ObservableProperty]
-    private string _language = "en-US";
+    public partial string Language { get; set; } = "en-US";
 
     [ObservableProperty]
-    private bool _autoExecute = true;
+    public partial bool AutoExecute { get; set; } = true;
 
     [ObservableProperty]
-    private bool _confirmDestructiveCommands = true;
+    public partial bool ConfirmDestructiveCommands { get; set; } = true;
 
     [ObservableProperty]
-    private bool _enableVoiceFeedback;
+    public partial bool EnableVoiceFeedback { get; set; }
 
     [ObservableProperty]
-    private bool _autoLoadPlugins = true;
+    public partial bool AutoLoadPlugins { get; set; } = true;
 
     [ObservableProperty]
-    private bool _showPluginStatus = true;
+    public partial bool ShowPluginStatus { get; set; } = true;
 
     [ObservableProperty]
-    private bool _detailedLogging;
+    public partial bool DetailedLogging { get; set; }
 
     [ObservableProperty]
-    private int _maxLogEntries = 100;
+    public partial int MaxLogEntries { get; set; } = 100;
 
     [ObservableProperty]
-    private bool _autoSaveHistory = true;
+    public partial bool AutoSaveHistory { get; set; } = true;
 
     [ObservableProperty]
-    private string _theme = "System";
+    public partial string Theme { get; set; } = "System";
 
     [ObservableProperty]
-    private bool _isSaving;
+    public partial bool IsSaving { get; set; }
 
     public async Task InitializeAsync()
     {
@@ -80,14 +80,14 @@ public sealed partial class SettingsPageViewModel(ISettingsService settingsServi
             UpdateSettingsFromProperties();
             await settingsService.SaveSettingsAsync(_currentSettings);
             
-            await Shell.Current.DisplayAlert(
+            await Shell.Current.DisplayAlertAsync(
                 "Settings Saved",
                 "Your settings have been saved successfully.",
                 "OK");
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert(
+            await Shell.Current.DisplayAlertAsync(
                 "Error",
                 $"Failed to save settings: {ex.Message}",
                 "OK");
@@ -101,7 +101,7 @@ public sealed partial class SettingsPageViewModel(ISettingsService settingsServi
     [RelayCommand]
     private async Task ResetSettingsAsync()
     {
-        var confirm = await Shell.Current.DisplayAlert(
+        var confirm = await Shell.Current.DisplayAlertAsync(
             "Reset Settings",
             "Are you sure you want to reset all settings to defaults? This cannot be undone.",
             "Reset",
@@ -118,14 +118,14 @@ public sealed partial class SettingsPageViewModel(ISettingsService settingsServi
             _currentSettings = new AppSettings();
             LoadSettingsToProperties();
             
-            await Shell.Current.DisplayAlert(
+            await Shell.Current.DisplayAlertAsync(
                 "Settings Reset",
                 "All settings have been reset to defaults.",
                 "OK");
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert(
+            await Shell.Current.DisplayAlertAsync(
                 "Error",
                 $"Failed to reset settings: {ex.Message}",
                 "OK");

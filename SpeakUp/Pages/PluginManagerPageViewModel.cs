@@ -110,7 +110,7 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
                 plugin.IsEnabled = !plugin.IsEnabled;
                 UpdateStatistics();
                 
-                await Shell.Current.DisplayAlert(
+                await Shell.Current.DisplayAlertAsync(
                     "Success",
                     $"Plugin '{plugin.Name}' has been {(plugin.IsEnabled ? "enabled" : "disabled")}.\nRestart the app to apply changes.",
                     "OK");
@@ -131,7 +131,7 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
     [RelayCommand]
     private async Task EnableAllPluginsAsync()
     {
-        var confirm = await Shell.Current.DisplayAlert(
+        var confirm = await Shell.Current.DisplayAlertAsync(
             "Enable All Plugins",
             "Enable all available plugins? This may increase startup time and memory usage.",
             "Enable All",
@@ -152,7 +152,7 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
 
             UpdateStatistics();
             
-            await Shell.Current.DisplayAlert(
+            await Shell.Current.DisplayAlertAsync(
                 "Success",
                 "All plugins have been enabled. Restart the app to apply changes.",
                 "OK");
@@ -185,7 +185,7 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
 
             UpdateStatistics();
             
-            await Shell.Current.DisplayAlert(
+            await Shell.Current.DisplayAlertAsync(
                 "Success",
                 "All plugins have been disabled. Restart the app to apply changes.",
                 "OK");

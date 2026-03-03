@@ -1,6 +1,5 @@
 using SpeakUp.Models;
-using System.Reflection;
-using System.Runtime.Loader;
+using SpeakUp.Plugins;
 
 namespace SpeakUp.Services;
 
@@ -42,58 +41,25 @@ internal sealed class PluginInfoService : IPluginInfoService
         await Task.CompletedTask;
 
         var statuses = new List<PluginStatus>();
-        var pluginsPath = Path.Combine(AppContext.BaseDirectory, "Plugins");
-
-        if (!Directory.Exists(pluginsPath))
-        {
-            _cachedStatuses = statuses;
-            return statuses;
-        }
-
-        var pluginFiles = Directory.GetFiles(pluginsPath, "*.dll", SearchOption.AllDirectories);
+        var pluginFiles = PluginDiscovery.GetManagedPluginFiles();
 
         foreach (var pluginFile in pluginFiles)
         {
             try
             {
-                if (!IsManagedAssembly(pluginFile))
-                {
-                    continue;
-                }
+                var fileName = PluginDiscovery.GetPluginFileName(pluginFile);
+                var metadata = PluginDiscovery.InspectPlugin(pluginFile, "PluginInfo");
+                var category = DetermineCategory(fileName);
 
-                var fileName = Path.GetFileNameWithoutExtension(pluginFile);
-                var assemblyName = AssemblyName.GetAssemblyName(pluginFile);
-                
-                var loadContext = new AssemblyLoadContext($"PluginInfo_{fileName}", isCollectible: true);
-                Assembly? assembly = null;
-                
-                try
+                statuses.Add(new PluginStatus
                 {
-                    assembly = loadContext.LoadFromAssemblyPath(pluginFile);
-                    
-                    var commandCount = assembly.GetTypes()
-                        .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static))
-                        .Count(m => m.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>() != null);
-
-                    var category = DetermineCategory(fileName);
-
-                    statuses.Add(new PluginStatus
-                    {
-                        Name = fileName.Replace("Extensions", "").Replace("Macro", ""),
-                        Category = category,
-                        IsLoaded = true,
-                        CommandCount = commandCount,
-                        Version = assemblyName.Version?.ToString() ?? "1.0.0",
-                        Description = $"{commandCount} commands available"
-                    });
-                }
-                finally
-                {
-                    if (assembly != null)
-                    {
-                        loadContext.Unload();
-                    }
-                }
+                    Name = PluginDiscovery.GetDisplayName(fileName),
+                    Category = category,
+                    IsLoaded = true,
+                    CommandCount = metadata.CommandCount,
+                    Version = metadata.AssemblyName.Version?.ToString() ?? "1.0.0",
+                    Description = $"{metadata.CommandCount} commands available"
+                });
             }
             catch
             {
@@ -115,29 +81,16 @@ internal sealed class PluginInfoService : IPluginInfoService
         return _cachedStatuses?.Sum(p => p.CommandCount) ?? 0;
     }
 
-    private static bool IsManagedAssembly(string path)
-    {
-        try
-        {
-            _ = AssemblyName.GetAssemblyName(path);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private static string DetermineCategory(string fileName)
     {
         return fileName.ToLowerInvariant() switch
         {
-            var n when n.Contains("telegram") || n.Contains("slack") || n.Contains("viber") || 
+            var n when n.Contains("telegram") || n.Contains("slack") || n.Contains("viber") ||
                       n.Contains("twitter") || n.Contains("facebook") => "Communication",
-            var n when n.Contains("sendgrid") || n.Contains("mailgun") || n.Contains("email") || 
+            var n when n.Contains("sendgrid") || n.Contains("mailgun") || n.Contains("email") ||
                       n.Contains("twilio") || n.Contains("elastic") => "Email/SMS",
             var n when n.Contains("s3") || n.Contains("drive") || n.Contains("mega") => "Cloud Storage",
-            var n when n.Contains("file") || n.Contains("process") || n.Contains("ssh") || 
+            var n when n.Contains("file") || n.Contains("process") || n.Contains("ssh") ||
                       n.Contains("device") => "System",
             var n when n.Contains("database") || n.Contains("insights") || n.Contains("http") => "Data",
             var n when n.Contains("abstract") || n.Contains("random") => "Utilities",

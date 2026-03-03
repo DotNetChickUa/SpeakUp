@@ -1,4 +1,5 @@
 using SpeakUp.Models;
+using SpeakUp.Plugins;
 using System.Collections.ObjectModel;
 
 namespace SpeakUp.Services;
@@ -63,30 +64,23 @@ internal sealed class PluginManagerService : IPluginManagerService
 
         var settings = await _settingsService.LoadSettingsAsync();
         var pluginStatuses = await _pluginInfoService.GetAllPluginStatusesAsync();
-        var pluginsPath = Path.Combine(AppContext.BaseDirectory, "Plugins");
 
         var plugins = new ObservableCollection<PluginInfo>();
-
-        if (!Directory.Exists(pluginsPath))
-        {
-            _cachedPlugins = plugins;
-            return plugins;
-        }
-
-        var pluginFiles = Directory.GetFiles(pluginsPath, "*.dll", SearchOption.AllDirectories);
+        var pluginFiles = PluginDiscovery.GetManagedPluginFiles();
 
         foreach (var file in pluginFiles)
         {
             try
             {
-                var fileName = Path.GetFileNameWithoutExtension(file);
+                var fileName = PluginDiscovery.GetPluginFileName(file);
+                var displayName = PluginDiscovery.GetDisplayName(fileName);
                 var fileInfo = new FileInfo(file);
-                
-                var status = pluginStatuses.FirstOrDefault(p => p.Name.Contains(fileName.Replace("Extensions", "")));
-                
+
+                var status = pluginStatuses.FirstOrDefault(p => p.Name.Contains(displayName, StringComparison.Ordinal));
+
                 var pluginInfo = new PluginInfo
                 {
-                    Name = fileName.Replace("Extensions", "").Replace("Macro", ""),
+                    Name = displayName,
                     Category = status?.Category ?? "Other",
                     IsLoaded = status?.IsLoaded ?? false,
                     CommandCount = status?.CommandCount ?? 0,
@@ -95,8 +89,9 @@ internal sealed class PluginManagerService : IPluginManagerService
                     FilePath = file,
                     FileSize = fileInfo.Length,
                     LastModified = fileInfo.LastWriteTime,
-                    IsEnabled = settings.Plugins.AutoLoadPlugins || 
-                               settings.Plugins.EnabledPlugins.Contains(fileName)
+                    IsEnabled = settings.Plugins.AutoLoadPlugins ||
+                                settings.Plugins.EnabledPlugins.Contains(fileName) ||
+                                settings.Plugins.EnabledPlugins.Contains(displayName)
                 };
 
                 plugins.Add(pluginInfo);
@@ -118,17 +113,16 @@ internal sealed class PluginManagerService : IPluginManagerService
         try
         {
             var settings = await _settingsService.LoadSettingsAsync();
-            
+
             if (!settings.Plugins.EnabledPlugins.Contains(pluginName))
             {
                 settings.Plugins.EnabledPlugins.Add(pluginName);
                 await _settingsService.SaveSettingsAsync(settings);
             }
 
-            // Update cache
             if (_cachedPlugins != null)
             {
-                var plugin = _cachedPlugins.FirstOrDefault(p => p.Name == pluginName || p.FilePath.Contains(pluginName));
+                var plugin = _cachedPlugins.FirstOrDefault(p => p.Name == pluginName || p.FilePath.Contains(pluginName, StringComparison.Ordinal));
                 if (plugin != null)
                 {
                     plugin.IsEnabled = true;
@@ -153,10 +147,9 @@ internal sealed class PluginManagerService : IPluginManagerService
             settings.Plugins.EnabledPlugins.Remove(pluginName);
             await _settingsService.SaveSettingsAsync(settings);
 
-            // Update cache
             if (_cachedPlugins != null)
             {
-                var plugin = _cachedPlugins.FirstOrDefault(p => p.Name == pluginName || p.FilePath.Contains(pluginName));
+                var plugin = _cachedPlugins.FirstOrDefault(p => p.Name == pluginName || p.FilePath.Contains(pluginName, StringComparison.Ordinal));
                 if (plugin != null)
                 {
                     plugin.IsEnabled = false;
@@ -175,9 +168,11 @@ internal sealed class PluginManagerService : IPluginManagerService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginName);
 
+        var normalizedName = PluginDiscovery.GetDisplayName(pluginName);
         var settings = await _settingsService.LoadSettingsAsync();
-        return settings.Plugins.AutoLoadPlugins || 
-               settings.Plugins.EnabledPlugins.Contains(pluginName);
+        return settings.Plugins.AutoLoadPlugins ||
+               settings.Plugins.EnabledPlugins.Contains(pluginName) ||
+               settings.Plugins.EnabledPlugins.Contains(normalizedName);
     }
 
     public async Task ReloadPluginsAsync()
