@@ -1,11 +1,11 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OpenAI;
 using OpenAI.Chat;
 using Shared;
 using SpeakUp.Plugins;
+using SpeakUp.Services;
 using System.ClientModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -17,16 +17,20 @@ namespace SpeakUp.Executor;
 
 internal class McpExecutor : IExecutor, IDisposable
 {
-    private readonly IConfiguration _configuration;
     private readonly ILogger<McpExecutor> _logger;
+    private readonly ISettingsService _settingsService;
     private readonly Lazy<PluginLoadResult> _lazyPlugins;
+
     private ChatClient? _chatClient;
+    private string? _activeApiKey;
+    private string? _activeEndpoint;
+    private string? _activeModel;
     private bool _disposed;
 
-    public McpExecutor(IConfiguration configuration, ILogger<McpExecutor> logger)
+    public McpExecutor(ILogger<McpExecutor> logger, ISettingsService settingsService)
     {
-        _configuration = configuration;
         _logger = logger;
+        _settingsService = settingsService;
         _lazyPlugins = new Lazy<PluginLoadResult>(LoadTools);
     }
 
@@ -37,7 +41,8 @@ internal class McpExecutor : IExecutor, IDisposable
         try
         {
             var tools = _lazyPlugins.Value.Tools;
-            var agent = GetOrCreateChatClient()
+            var chatClient = await GetOrCreateChatClientAsync();
+            var agent = chatClient
                 .AsIChatClient()
                 .AsAIAgent(
                     instructions: "You are a powerful super user that can execute any commands. It is important you do exactly what I ask you. Make sure you run the command in correct order, with correct arguments and ensure you don't replay the same command multiple times. You must follow the workflow I provided for you. Example: I ask you to start notepad and enter the text 'Hello World'. You must start the notepad only once, and enter exactly the text 'Hello World'",
@@ -85,20 +90,39 @@ internal class McpExecutor : IExecutor, IDisposable
         }
     }
 
-    private ChatClient GetOrCreateChatClient()
+    private async Task<ChatClient> GetOrCreateChatClientAsync()
     {
-        if (_chatClient is not null)
+        var aiSettings = await _settingsService.LoadSettingsAsync();
+
+        if (string.IsNullOrWhiteSpace(aiSettings.AiProvider.ApiKey))
+        {
+            throw new InvalidOperationException("AI key is not configured. Set it in Settings or appsettings.json");
+        }
+
+        if (_chatClient is not null
+            && string.Equals(_activeApiKey, aiSettings.AiProvider.ApiKey, StringComparison.Ordinal)
+            && string.Equals(_activeEndpoint, aiSettings.AiProvider.CustomEndpoint, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(_activeModel, aiSettings.AiProvider.Model, StringComparison.Ordinal))
         {
             return _chatClient;
         }
 
+        _activeApiKey = aiSettings.AiProvider.ApiKey;
+        _activeEndpoint = aiSettings.AiProvider.CustomEndpoint;
+        _activeModel = aiSettings.AiProvider.Model;
+
         _chatClient = new OpenAIClient(
-            new ApiKeyCredential(_configuration["AIKey"] ?? throw new InvalidOperationException("AIKey not configured")),
-            new OpenAIClientOptions()
+            new ApiKeyCredential(aiSettings.AiProvider.ApiKey),
+            new OpenAIClientOptions
             {
-                //Endpoint = new Uri("https://api.chatanywhere.tech/v1")
-                Endpoint = new Uri("https://free.v36.cm/v1")
-            }).GetChatClient("gpt-4o-mini");
+                Endpoint = new Uri(aiSettings.AiProvider.CustomEndpoint)
+            }).GetChatClient(aiSettings.AiProvider.Model);
+
+        _logger.LogInformation(
+            "Configured AI client with model '{Model}' and endpoint '{Endpoint}'",
+            aiSettings.AiProvider.Model,
+            aiSettings.AiProvider.CustomEndpoint);
+
         return _chatClient;
     }
 

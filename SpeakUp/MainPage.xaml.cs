@@ -7,5 +7,15 @@
             InitializeComponent();
             BindingContext = mainPageViewModel;
         }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            if (BindingContext is MainPageViewModel viewModel)
+            {
+                await viewModel.InitializeAsync();
+            }
+        }
     }
 }

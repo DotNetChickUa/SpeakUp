@@ -4,15 +4,21 @@ using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SpeakUp.Executor;
+using SpeakUp.Services;
 
 namespace SpeakUp;
 
 public sealed partial class MainPageViewModel(
     IExecutor executor,
+    ISettingsService settingsService,
     [FromKeyedServices(nameof(SpeechToTextImplementation))] ISpeechToText onlineSpeechToText,
     [FromKeyedServices(nameof(OfflineSpeechToTextImplementation))] ISpeechToText offlineSpeechToText) : ObservableObject, IDisposable
 {
+    private readonly ISettingsService _settingsService = settingsService;
     private bool _isSubscribed;
+    private bool _isInitialized;
+    private bool _autoExecuteCommands = true;
+    private CultureInfo _speechCulture = CultureInfo.CurrentCulture;
 
     public ObservableCollection<string> Logs { get; set; } = [];
 
@@ -33,6 +39,20 @@ public sealed partial class MainPageViewModel(
 
     private ISpeechToText SpeechToText => IsOfflineSpeechToText ? offlineSpeechToText : onlineSpeechToText;
 
+    public async Task InitializeAsync()
+    {
+        if (_isInitialized)
+        {
+            return;
+        }
+
+        var settings = await _settingsService.LoadSettingsAsync();
+
+        IsOfflineSpeechToText = settings.Speech.UseOfflineRecognition;
+        _autoExecuteCommands = settings.Speech.AutoExecute;
+        _speechCulture = ResolveCulture(settings.Speech.Language);
+        _isInitialized = true;
+    }
 
     private void SpeechToTextOnStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
     {
@@ -64,7 +84,7 @@ public sealed partial class MainPageViewModel(
     private async Task StartListen()
     {
         RecognitionResult = null;
-        await SpeechToText.StartListenAsync(new SpeechToTextOptions() { Culture = CultureInfo.CurrentCulture, ShouldReportPartialResults = true });
+        await SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = _speechCulture, ShouldReportPartialResults = true });
         Subscribe();
     }
 
@@ -72,9 +92,13 @@ public sealed partial class MainPageViewModel(
     private async Task StopListen()
     {
         await StopListening();
-        await ExecuteRecognitionResult();
+
+        if (_autoExecuteCommands)
+        {
+            await ExecuteRecognitionResult();
+        }
     }
-    
+
     private async Task StopListening()
     {
         await SpeechToText.StopListenAsync();
@@ -87,6 +111,7 @@ public sealed partial class MainPageViewModel(
         await StopListening();
 
         IsOfflineSpeechToText = !IsOfflineSpeechToText;
+        await PersistSpeechModeAsync();
     }
 
     /// <inheritdoc />
@@ -117,5 +142,36 @@ public sealed partial class MainPageViewModel(
         SpeechToText.StateChanged -= SpeechToTextOnStateChanged;
         SpeechToText.RecognitionResultUpdated -= _speechToText_RecognitionResultUpdated;
         _isSubscribed = false;
+    }
+
+    private async Task PersistSpeechModeAsync()
+    {
+        try
+        {
+            var settings = await _settingsService.LoadSettingsAsync();
+            settings.Speech.UseOfflineRecognition = IsOfflineSpeechToText;
+            await _settingsService.SaveSettingsAsync(settings);
+        }
+        catch (Exception ex)
+        {
+            Logs.Add($"Failed to persist speech mode: {ex.Message}");
+        }
+    }
+
+    private static CultureInfo ResolveCulture(string? language)
+    {
+        if (string.IsNullOrWhiteSpace(language))
+        {
+            return CultureInfo.CurrentCulture;
+        }
+
+        try
+        {
+            return CultureInfo.GetCultureInfo(language);
+        }
+        catch (CultureNotFoundException)
+        {
+            return CultureInfo.CurrentCulture;
+        }
     }
 }

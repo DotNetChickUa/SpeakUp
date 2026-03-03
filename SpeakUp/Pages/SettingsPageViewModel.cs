@@ -64,6 +64,7 @@ public sealed partial class SettingsPageViewModel(ISettingsService settingsServi
     {
         _currentSettings = await settingsService.LoadSettingsAsync();
         LoadSettingsToProperties();
+        ApplyTheme(Theme);
     }
 
     [RelayCommand]
@@ -79,6 +80,7 @@ public sealed partial class SettingsPageViewModel(ISettingsService settingsServi
             IsSaving = true;
             UpdateSettingsFromProperties();
             await settingsService.SaveSettingsAsync(_currentSettings);
+            ApplyTheme(Theme);
             
             await Shell.Current.DisplayAlertAsync(
                 "Settings Saved",
@@ -117,6 +119,7 @@ public sealed partial class SettingsPageViewModel(ISettingsService settingsServi
             await settingsService.ResetSettingsAsync();
             _currentSettings = new AppSettings();
             LoadSettingsToProperties();
+            ApplyTheme(Theme);
             
             await Shell.Current.DisplayAlertAsync(
                 "Settings Reset",
@@ -182,5 +185,20 @@ public sealed partial class SettingsPageViewModel(ISettingsService settingsServi
         _currentSettings.General.MaxLogEntries = MaxLogEntries;
         _currentSettings.General.AutoSaveHistory = AutoSaveHistory;
         _currentSettings.General.Theme = Theme;
+    }
+
+    private static void ApplyTheme(string? theme)
+    {
+        if (Application.Current is null)
+        {
+            return;
+        }
+
+        Application.Current.UserAppTheme = theme?.ToLowerInvariant() switch
+        {
+            "light" => AppTheme.Light,
+            "dark" => AppTheme.Dark,
+            _ => AppTheme.Unspecified
+        };
     }
 }

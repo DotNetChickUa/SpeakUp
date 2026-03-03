@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SpeakUp.Services;
 
 namespace SpeakUp
 {
@@ -7,6 +8,7 @@ namespace SpeakUp
         public App()
         {
             InitializeComponent();
+            ApplyStartupTheme();
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
@@ -36,6 +38,29 @@ namespace SpeakUp
 #endif
             
             return window;
+        }
+
+        private static void ApplyStartupTheme()
+        {
+            var services = IPlatformApplication.Current?.Services;
+            if (services is null || Application.Current is null)
+            {
+                return;
+            }
+
+            var settingsService = services.GetService<ISettingsService>();
+            if (settingsService is null)
+            {
+                return;
+            }
+
+            var settings = settingsService.LoadSettingsAsync().GetAwaiter().GetResult();
+            Application.Current.UserAppTheme = settings.General.Theme?.ToLowerInvariant() switch
+            {
+                "light" => AppTheme.Light,
+                "dark" => AppTheme.Dark,
+                _ => AppTheme.Unspecified
+            };
         }
     }
 }
