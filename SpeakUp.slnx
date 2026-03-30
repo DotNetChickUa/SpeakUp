@@ -24,7 +24,12 @@
     <Project Path="Plugins/TwitterExtensions/TwitterExtensions.csproj" />
     <Project Path="Plugins/ViberExtensions/ViberExtensions.csproj" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="PluginTester/PluginTester.csproj" Id="f91dffaa-dae1-402c-be11-04ca9b6974f3" />
   <Project Path="Shared/Shared.csproj" Id="4bee4e7b-643e-4613-99c9-830a0630391c" />
-  <Project Path="SpeakUp/SpeakUp.csproj" />
+  <Project Path="SpeakUp/SpeakUp.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>
