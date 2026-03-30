@@ -1,6 +1,7 @@
 ﻿using BootlegRealists.Reporting;
 using Shared;
 using System.ComponentModel;
+using WnvWordToPdf;
 
 namespace OfficeExtensions;
 
@@ -20,6 +21,21 @@ public class OfficeCommands
     [Description("Converts a Word document to PDF 4")]
     public static async Task WordToPdf4(string docxFileName, string pdfFileName)
     {
-        
+        Spire.Doc.Document document = new Spire.Doc.Document();
+        document.LoadFromFile(docxFileName);
+        document.Replace("{{title}}", "title", false, true);
+        document.SaveToFile(pdfFileName, Spire.Doc.FileFormat.PDF);
+    }
+
+    [Description("Converts a Word document to PDF 5")]
+    public static async Task WordToPdf5(string docxFileName, string pdfFileName)
+    {
+        WordToPdfConverter wordToPdfConverter = new WordToPdfConverter();
+        wordToPdfConverter.LicenseKey = "DYOSgpaRgpKClIySgpGTjJOQjJubm5uCkg==";
+
+        wordToPdfConverter.PdfDocumentOptions.ShowHeader = true;
+        wordToPdfConverter.PdfDocumentOptions.ShowFooter = true;
+        byte[] outPdfBuffer = wordToPdfConverter.ConvertWordFile(docxFileName);
+        await System.IO.File.WriteAllBytesAsync(pdfFileName, outPdfBuffer);
     }
 }
