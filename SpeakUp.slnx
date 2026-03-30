@@ -4,15 +4,16 @@
     <Project Path="Plugins/AIExtensions/AIExtensions.csproj" />
     <Project Path="Plugins/AmazonS3Extensions/AmazonS3Extensions.csproj" />
     <Project Path="Plugins/ApplicationInsightsExtensions/ApplicationInsightsExtensions.csproj" />
+    <Project Path="Plugins/Base.Extensions/Base.Extensions.csproj" />
     <Project Path="Plugins/DatabaseExtensions/DatabaseExtensions.csproj" />
     <Project Path="Plugins/DeviceExtensions/DeviceExtensions.csproj" />
-    <Project Path="Plugins/Base.Extensions/Base.Extensions.csproj" />
     <Project Path="Plugins/ElasticEmailExtensions/ElasticEmailExtensions.csproj" />
     <Project Path="Plugins/FacebookExtensions/FacebookExtensions.csproj" />
     <Project Path="Plugins/FileSystemExtensions/FileSystemExtensions.csproj" />
     <Project Path="Plugins/GoogleDriveExtensions/GoogleDriveExtensions.csproj" />
     <Project Path="Plugins/MailgunExtensions/MailgunExtensions.csproj" />
     <Project Path="Plugins/MegaExtensions/MegaExtensions.csproj" />
+    <Project Path="Plugins/OfficeExtensions/OfficeExtensions.csproj" Id="3cf1a9cb-1681-4c16-9275-c49067440760" />
     <Project Path="Plugins/ProcessExtensions/ProcessExtensions.csproj" />
     <Project Path="Plugins/RandomExtensions/RandomExtensions.csproj" />
     <Project Path="Plugins/SendGridExtensions/SendGridExtensions.csproj" />

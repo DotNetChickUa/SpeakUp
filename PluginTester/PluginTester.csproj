@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Plugins\AbstractApiExtensions\AbstractApiExtensions.csproj" />
+    <ProjectReference Include="..\Plugins\OfficeExtensions\OfficeExtensions.csproj" />
   </ItemGroup>
 
 </Project>
