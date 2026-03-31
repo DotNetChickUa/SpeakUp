@@ -27,7 +27,8 @@
 	<ItemGroup>
 		<PackageReference Include="BootlegRealists.DocxToPdf" Version="1.0.2" />
 		<PackageReference Include="FreeSpire.Doc" Version="12.2.0" />
-		<PackageReference Include="Syncfusion.DocIORenderer.Net.Core" Version="33.1.45" />
+		<PackageReference Include="PDFsharp" Version="7.0.0-preview-1" />
+		<PackageReference Include="Syncfusion.DocIORenderer.Net.Core" Version="33.1.46" />
 		<PackageReference Include="Winnovative.Pdf.Next.WordToPdf" Version="20.0.8" />
 		<PackageReference Include="Winnovative.WordToPdf" Version="14.0.2" />
 	</ItemGroup>

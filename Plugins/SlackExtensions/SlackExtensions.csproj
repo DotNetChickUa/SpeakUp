@@ -13,6 +13,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="SlackNet" Version="0.17.9" />
+		<PackageReference Include="SlackNet" Version="0.17.10" />
 	</ItemGroup>
 </Project>
