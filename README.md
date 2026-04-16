@@ -12,7 +12,7 @@ SpeakUp combines speech recognition (both online and offline) with Microsoft Age
 
 - **Voice Control**: Both online and offline speech-to-text recognition
 - **AI Agent Execution**: Intelligent command interpretation and execution using Microsoft.Agents.AI
-- **Plugin Architecture**: 20+ extensible plugins for different services
+- **Plugin Architecture**: 100+ extensible plugins for different services
 - **Cross-Platform**: Built with .NET MAUI for Windows, macOS, iOS, and Android
 - **Real-time Feedback**: Live activity logs and status updates
 - **Context-Aware**: AI agent maintains command context and workflow understanding
@@ -53,37 +53,22 @@ SpeakUp combines speech recognition (both online and offline) with Microsoft Age
 ### External APIs
 - **AbstractAPI** - VAT validation, phone validation, IP geolocation, IBAN validation, holidays lookup, exchange rates, email validation
 
+and more...
+
 ## Getting Started
 
 ### Prerequisites
 
 - .NET 10 SDK
-- Visual Studio 2026 or later (for development)
 - OpenAI API key or compatible AI service
 
 ### Usage
 
 1. Launch the application
 1. Setup your AI agent with the desired plugins and configurations in Settings
-2. Choose between online or offline speech recognition
+2. Choose between online and offline speech recognition
 3. Click **Start** to begin listening
 4. Speak your command (e.g., "Start notepad")
-5. The AI agent will interpret and execute your command
-6. View real-time logs in the Activity Log section
-
-## Architecture
-
-```
-SpeakUp/
-├── SpeakUp/              # Main MAUI application
-│   ├── Executor/         # McpExecutor and AI agent logic
-│   ├── MainPage.xaml     # UI
-│   └── MainPageViewModel.cs
-├── Plugins/              # Extensible plugin system
-│   ├── Base.Extensions/  # Base classes and interfaces
-│   ├── AIExtensions/
-│   ├── DatabaseExtensions/
-│   └── [20+ plugins]
-├── Shared/               # Shared models and utilities
-└── PluginTester/         # Plugin testing console app
-```
+5. Click **Stop**
+6. The AI agent will interpret and execute your command
+7. View real-time logs in the Activity Log section
