@@ -72,3 +72,7 @@ and more...
 5. Click **Stop**
 6. The AI agent will interpret and execute your command
 7. View real-time logs in the Activity Log section
+
+## Video
+
+[SpeakUp Demo](./Video%20Project.mp4)

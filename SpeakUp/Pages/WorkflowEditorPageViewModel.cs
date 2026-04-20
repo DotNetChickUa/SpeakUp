@@ -6,12 +6,12 @@ using System.Collections.ObjectModel;
 
 namespace SpeakUp.Pages;
 
-public sealed partial class WorkflowEditorPageViewModel : ObservableObject
+public sealed partial class WorkflowEditorPageViewModel(
+    IWorkflowService workflowService,
+    IWorkflowExecutionService executionService,
+    IErrorHandlingService errorHandler)
+    : ObservableObject
 {
-    private readonly IWorkflowService _workflowService;
-    private readonly IWorkflowExecutionService _executionService;
-    private readonly IErrorHandlingService _errorHandler;
-
     [ObservableProperty]
     private int _workflowId;
 
@@ -64,16 +64,6 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
         "Log"
     };
 
-    public WorkflowEditorPageViewModel(
-        IWorkflowService workflowService,
-        IWorkflowExecutionService executionService,
-        IErrorHandlingService errorHandler)
-    {
-        _workflowService = workflowService;
-        _executionService = executionService;
-        _errorHandler = errorHandler;
-    }
-
     public async Task InitializeAsync(int workflowId)
     {
         WorkflowId = workflowId;
@@ -92,7 +82,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
         {
             IsLoading = true;
 
-            var workflow = await _workflowService.GetWorkflowAsync(WorkflowId);
+            var workflow = await workflowService.GetWorkflowAsync(WorkflowId);
             if (workflow != null)
             {
                 WorkflowName = workflow.Name;
@@ -102,14 +92,14 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
                 IsWorkflowEnabled = workflow.IsEnabled;
             }
 
-            var steps = await _workflowService.GetWorkflowStepsAsync(WorkflowId);
+            var steps = await workflowService.GetWorkflowStepsAsync(WorkflowId);
             Steps.Clear();
             foreach (var step in steps)
             {
                 Steps.Add(step);
             }
 
-            var triggers = await _workflowService.GetWorkflowTriggersAsync(WorkflowId);
+            var triggers = await workflowService.GetWorkflowTriggersAsync(WorkflowId);
             Triggers.Clear();
             foreach (var trigger in triggers)
             {
@@ -118,7 +108,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, "Loading workflow");
+            await errorHandler.HandleExceptionAsync(ex, "Loading workflow");
         }
         finally
         {
@@ -131,7 +121,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(WorkflowName))
         {
-            await _errorHandler.ShowErrorAsync("Validation Error", "Workflow name is required");
+            await errorHandler.ShowErrorAsync("Validation Error", "Workflow name is required");
             return;
         }
 
@@ -149,28 +139,28 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
                 IsEnabled = IsWorkflowEnabled
             };
 
-            await _workflowService.SaveWorkflowAsync(workflow);
+            await workflowService.SaveWorkflowAsync(workflow);
 
             // Save all steps with updated order
             for (int i = 0; i < Steps.Count; i++)
             {
                 Steps[i].Order = i;
                 Steps[i].WorkflowId = WorkflowId;
-                await _workflowService.SaveWorkflowStepAsync(Steps[i]);
+                await workflowService.SaveWorkflowStepAsync(Steps[i]);
             }
 
             // Save all triggers
             foreach (var trigger in Triggers)
             {
                 trigger.WorkflowId = WorkflowId;
-                await _workflowService.SaveWorkflowTriggerAsync(trigger);
+                await workflowService.SaveWorkflowTriggerAsync(trigger);
             }
 
             await Shell.Current.DisplayAlertAsync("Success", "Workflow saved successfully", "OK");
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, "Saving workflow");
+            await errorHandler.HandleExceptionAsync(ex, "Saving workflow");
         }
         finally
         {
@@ -246,7 +236,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
         {
             if (step.Id > 0)
             {
-                await _workflowService.DeleteWorkflowStepAsync(step.Id);
+                await workflowService.DeleteWorkflowStepAsync(step.Id);
             }
 
             Steps.Remove(step);
@@ -259,7 +249,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, $"Deleting step '{step.Name}'");
+            await errorHandler.HandleExceptionAsync(ex, $"Deleting step '{step.Name}'");
         }
     }
 
@@ -346,14 +336,14 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
         {
             if (trigger.Id > 0)
             {
-                await _workflowService.DeleteWorkflowTriggerAsync(trigger.Id);
+                await workflowService.DeleteWorkflowTriggerAsync(trigger.Id);
             }
 
             Triggers.Remove(trigger);
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, "Deleting trigger");
+            await errorHandler.HandleExceptionAsync(ex, "Deleting trigger");
         }
     }
 
@@ -365,7 +355,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
             // Save first
             await SaveWorkflowAsync();
 
-            var (isValid, errors) = await _executionService.ValidateWorkflowAsync(WorkflowId);
+            var (isValid, errors) = await executionService.ValidateWorkflowAsync(WorkflowId);
 
             if (isValid)
             {
@@ -384,7 +374,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, "Validating workflow");
+            await errorHandler.HandleExceptionAsync(ex, "Validating workflow");
         }
     }
 
@@ -403,7 +393,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
             // Save first
             await SaveWorkflowAsync();
 
-            var result = await _executionService.ExecuteWorkflowAsync(WorkflowId);
+            var result = await executionService.ExecuteWorkflowAsync(WorkflowId);
 
             var message = result.Success
                 ? $"✓ Test passed!\n\nDuration: {result.Duration.TotalSeconds:F2}s\nSteps: {result.StepsExecuted}\n\nLog:\n{string.Join("\n", result.Log.TakeLast(5))}"
@@ -416,7 +406,7 @@ public sealed partial class WorkflowEditorPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, "Testing workflow");
+            await errorHandler.HandleExceptionAsync(ex, "Testing workflow");
         }
         finally
         {

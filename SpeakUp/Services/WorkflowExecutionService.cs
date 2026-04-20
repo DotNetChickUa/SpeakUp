@@ -39,28 +39,20 @@ public interface IWorkflowExecutionService
 /// <summary>
 /// Implementation of workflow execution service
 /// </summary>
-internal sealed class WorkflowExecutionService : IWorkflowExecutionService
+internal sealed class WorkflowExecutionService(
+    IWorkflowService workflowService,
+    IExecutor executor,
+    IErrorHandlingService errorHandler)
+    : IWorkflowExecutionService
 {
-    private readonly IWorkflowService _workflowService;
-    private readonly IExecutor _executor;
-    private readonly IErrorHandlingService _errorHandler;
+    private readonly IErrorHandlingService _errorHandler = errorHandler;
     private readonly Dictionary<int, CancellationTokenSource> _runningWorkflows = new();
-
-    public WorkflowExecutionService(
-        IWorkflowService workflowService,
-        IExecutor executor,
-        IErrorHandlingService errorHandler)
-    {
-        _workflowService = workflowService;
-        _executor = executor;
-        _errorHandler = errorHandler;
-    }
 
     public async Task<WorkflowExecutionResult> ExecuteWorkflowAsync(
         int workflowId,
         Dictionary<string, object?>? initialVariables = null)
     {
-        var workflow = await _workflowService.GetWorkflowAsync(workflowId);
+        var workflow = await workflowService.GetWorkflowAsync(workflowId);
         if (workflow == null)
         {
             return new WorkflowExecutionResult
@@ -79,7 +71,7 @@ internal sealed class WorkflowExecutionService : IWorkflowExecutionService
             };
         }
 
-        var steps = await _workflowService.GetWorkflowStepsAsync(workflowId);
+        var steps = await workflowService.GetWorkflowStepsAsync(workflowId);
         if (steps.Count == 0)
         {
             return new WorkflowExecutionResult
@@ -210,7 +202,7 @@ internal sealed class WorkflowExecutionService : IWorkflowExecutionService
             _runningWorkflows.Remove(workflowId);
 
             // Update statistics
-            await _workflowService.UpdateWorkflowStatisticsAsync(workflowId, stopwatch.ElapsedMilliseconds);
+            await workflowService.UpdateWorkflowStatisticsAsync(workflowId, stopwatch.ElapsedMilliseconds);
         }
 
         return result;
@@ -222,7 +214,7 @@ internal sealed class WorkflowExecutionService : IWorkflowExecutionService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(workflowName);
 
-        var workflows = await _workflowService.GetAllWorkflowsAsync();
+        var workflows = await workflowService.GetAllWorkflowsAsync();
         var workflow = workflows.FirstOrDefault(w => w.Name.Equals(workflowName, StringComparison.OrdinalIgnoreCase));
 
         if (workflow == null)
@@ -277,14 +269,14 @@ internal sealed class WorkflowExecutionService : IWorkflowExecutionService
     {
         var errors = new List<string>();
 
-        var workflow = await _workflowService.GetWorkflowAsync(workflowId);
+        var workflow = await workflowService.GetWorkflowAsync(workflowId);
         if (workflow == null)
         {
             errors.Add("Workflow not found");
             return (false, errors);
         }
 
-        var steps = await _workflowService.GetWorkflowStepsAsync(workflowId);
+        var steps = await workflowService.GetWorkflowStepsAsync(workflowId);
         if (steps.Count == 0)
         {
             errors.Add("Workflow has no steps");
@@ -360,7 +352,7 @@ internal sealed class WorkflowExecutionService : IWorkflowExecutionService
         CancellationToken cancellationToken)
     {
         var command = SubstituteVariables(step.Action, variables);
-        var result = await _executor.Execute(command);
+        var result = await executor.Execute(command);
         return (true, null, result);
     }
 
@@ -409,7 +401,7 @@ internal sealed class WorkflowExecutionService : IWorkflowExecutionService
     {
         // For plugin actions, use the executor with a formatted command
         var command = $"{step.PluginName}: {SubstituteVariables(step.Action, variables)}";
-        var result = await _executor.Execute(command);
+        var result = await executor.Execute(command);
         return (true, null, result);
     }
 

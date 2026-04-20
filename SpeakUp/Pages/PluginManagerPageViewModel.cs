@@ -6,11 +6,11 @@ using System.Collections.ObjectModel;
 
 namespace SpeakUp.Pages;
 
-public sealed partial class PluginManagerPageViewModel : ObservableObject
+public sealed partial class PluginManagerPageViewModel(
+    IPluginManagerService pluginManager,
+    IErrorHandlingService errorHandler)
+    : ObservableObject
 {
-    private readonly IPluginManagerService _pluginManager;
-    private readonly IErrorHandlingService _errorHandler;
-
     public ObservableCollection<PluginInfo> Plugins { get; } = [];
     public ObservableCollection<PluginInfo> FilteredPlugins { get; } = [];
 
@@ -44,12 +44,6 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
         "Other"
     };
 
-    public PluginManagerPageViewModel(IPluginManagerService pluginManager, IErrorHandlingService errorHandler)
-    {
-        _pluginManager = pluginManager;
-        _errorHandler = errorHandler;
-    }
-
     public async Task InitializeAsync()
     {
         await LoadPluginsAsync();
@@ -67,7 +61,7 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
         {
             IsLoading = true;
             
-            var plugins = await _pluginManager.GetAllPluginsAsync();
+            var plugins = await pluginManager.GetAllPluginsAsync();
             
             Plugins.Clear();
             foreach (var plugin in plugins)
@@ -80,7 +74,7 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(
+            await errorHandler.HandleExceptionAsync(
                 ex,
                 "Loading plugins",
                 "Check if the Plugins folder exists and contains valid plugin DLLs");
@@ -102,8 +96,8 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
         try
         {
             var success = plugin.IsEnabled
-                ? await _pluginManager.DisablePluginAsync(plugin.Name)
-                : await _pluginManager.EnablePluginAsync(plugin.Name);
+                ? await pluginManager.DisablePluginAsync(plugin.Name)
+                : await pluginManager.EnablePluginAsync(plugin.Name);
 
             if (success)
             {
@@ -117,14 +111,14 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
             }
             else
             {
-                await _errorHandler.ShowErrorAsync(
+                await errorHandler.ShowErrorAsync(
                     "Plugin Toggle Failed",
                     $"Could not toggle plugin '{plugin.Name}'");
             }
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, $"Toggling plugin '{plugin.Name}'");
+            await errorHandler.HandleExceptionAsync(ex, $"Toggling plugin '{plugin.Name}'");
         }
     }
 
@@ -146,7 +140,7 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
         {
             foreach (var plugin in Plugins.Where(p => !p.IsEnabled))
             {
-                await _pluginManager.EnablePluginAsync(plugin.Name);
+                await pluginManager.EnablePluginAsync(plugin.Name);
                 plugin.IsEnabled = true;
             }
 
@@ -159,14 +153,14 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, "Enabling all plugins");
+            await errorHandler.HandleExceptionAsync(ex, "Enabling all plugins");
         }
     }
 
     [RelayCommand]
     private async Task DisableAllPluginsAsync()
     {
-        var confirm = await _errorHandler.ConfirmDestructiveActionAsync(
+        var confirm = await errorHandler.ConfirmDestructiveActionAsync(
             "disable all plugins",
             "All plugin functionality will be unavailable until re-enabled.");
 
@@ -179,7 +173,7 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
         {
             foreach (var plugin in Plugins.Where(p => p.IsEnabled))
             {
-                await _pluginManager.DisablePluginAsync(plugin.Name);
+                await pluginManager.DisablePluginAsync(plugin.Name);
                 plugin.IsEnabled = false;
             }
 
@@ -192,7 +186,7 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, "Disabling all plugins");
+            await errorHandler.HandleExceptionAsync(ex, "Disabling all plugins");
         }
     }
 
@@ -227,7 +221,7 @@ public sealed partial class PluginManagerPageViewModel : ObservableObject
     [RelayCommand]
     private async Task RefreshPluginsAsync()
     {
-        await _pluginManager.ReloadPluginsAsync();
+        await pluginManager.ReloadPluginsAsync();
         await LoadPluginsAsync();
     }
 

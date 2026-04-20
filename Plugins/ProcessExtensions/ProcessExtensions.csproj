@@ -17,7 +17,7 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 
 		<Nullable>enable</Nullable>
-		<BaseOutputPath>..\..\SpeakUp\bin\Debug\$(TargetFramework)\win-x64\Plugins\$(MSBuildProjectName)</BaseOutputPath>
+		<BaseOutputPath>..\..\SpeakUp\bin\$(Configuration)\$(TargetFramework)\win-x64\Plugins\$(MSBuildProjectName)</BaseOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>

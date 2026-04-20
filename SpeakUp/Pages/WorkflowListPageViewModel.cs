@@ -6,12 +6,12 @@ using System.Collections.ObjectModel;
 
 namespace SpeakUp.Pages;
 
-public sealed partial class WorkflowListPageViewModel : ObservableObject
+public sealed partial class WorkflowListPageViewModel(
+    IWorkflowService workflowService,
+    IWorkflowExecutionService executionService,
+    IErrorHandlingService errorHandler)
+    : ObservableObject
 {
-    private readonly IWorkflowService _workflowService;
-    private readonly IWorkflowExecutionService _executionService;
-    private readonly IErrorHandlingService _errorHandler;
-
     public ObservableCollection<Workflow> Workflows { get; } = [];
 
     [ObservableProperty]
@@ -40,19 +40,9 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
         "Custom"
     };
 
-    public WorkflowListPageViewModel(
-        IWorkflowService workflowService,
-        IWorkflowExecutionService executionService,
-        IErrorHandlingService errorHandler)
-    {
-        _workflowService = workflowService;
-        _executionService = executionService;
-        _errorHandler = errorHandler;
-    }
-
     public async Task InitializeAsync()
     {
-        await _workflowService.InitializeAsync();
+        await workflowService.InitializeAsync();
         await LoadWorkflowsAsync();
     }
 
@@ -69,12 +59,12 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
             IsLoading = true;
 
             var workflows = SelectedCategory == "All"
-                ? await _workflowService.GetAllWorkflowsAsync()
-                : await _workflowService.GetWorkflowsByCategoryAsync(SelectedCategory);
+                ? await workflowService.GetAllWorkflowsAsync()
+                : await workflowService.GetWorkflowsByCategoryAsync(SelectedCategory);
 
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
-                var searchResults = await _workflowService.SearchWorkflowsAsync(SearchText);
+                var searchResults = await workflowService.SearchWorkflowsAsync(SearchText);
                 workflows = workflows.Intersect(searchResults).ToList();
             }
 
@@ -88,7 +78,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, "Loading workflows");
+            await errorHandler.HandleExceptionAsync(ex, "Loading workflows");
         }
         finally
         {
@@ -119,14 +109,14 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
                 IsEnabled = true
             };
 
-            await _workflowService.SaveWorkflowAsync(workflow);
+            await workflowService.SaveWorkflowAsync(workflow);
             await LoadWorkflowsAsync();
 
             await Shell.Current.DisplayAlertAsync("Success", $"Workflow '{name}' created", "OK");
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, "Creating workflow");
+            await errorHandler.HandleExceptionAsync(ex, "Creating workflow");
         }
     }
 
@@ -140,7 +130,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
 
         try
         {
-            var result = await _executionService.ExecuteWorkflowAsync(workflow.Id);
+            var result = await executionService.ExecuteWorkflowAsync(workflow.Id);
 
             var message = result.Success
                 ? $"Workflow completed successfully!\n\nDuration: {result.Duration.TotalSeconds:F2}s\nSteps: {result.StepsExecuted}"
@@ -155,7 +145,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, $"Executing workflow '{workflow.Name}'");
+            await errorHandler.HandleExceptionAsync(ex, $"Executing workflow '{workflow.Name}'");
         }
     }
 
@@ -179,7 +169,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
             return;
         }
 
-        var confirm = await _errorHandler.ConfirmDestructiveActionAsync(
+        var confirm = await errorHandler.ConfirmDestructiveActionAsync(
             $"delete workflow '{workflow.Name}'",
             "All steps and triggers will be permanently removed.");
 
@@ -190,7 +180,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
 
         try
         {
-            await _workflowService.DeleteWorkflowAsync(workflow.Id);
+            await workflowService.DeleteWorkflowAsync(workflow.Id);
             Workflows.Remove(workflow);
             UpdateStatistics();
 
@@ -198,7 +188,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, $"Deleting workflow '{workflow.Name}'");
+            await errorHandler.HandleExceptionAsync(ex, $"Deleting workflow '{workflow.Name}'");
         }
     }
 
@@ -213,12 +203,12 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
         try
         {
             workflow.IsEnabled = !workflow.IsEnabled;
-            await _workflowService.SaveWorkflowAsync(workflow);
+            await workflowService.SaveWorkflowAsync(workflow);
             UpdateStatistics();
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, $"Toggling workflow '{workflow.Name}'");
+            await errorHandler.HandleExceptionAsync(ex, $"Toggling workflow '{workflow.Name}'");
         }
     }
 
@@ -232,7 +222,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
 
         try
         {
-            var (isValid, errors) = await _executionService.ValidateWorkflowAsync(workflow.Id);
+            var (isValid, errors) = await executionService.ValidateWorkflowAsync(workflow.Id);
 
             if (isValid)
             {
@@ -248,7 +238,7 @@ public sealed partial class WorkflowListPageViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _errorHandler.HandleExceptionAsync(ex, $"Validating workflow '{workflow.Name}'");
+            await errorHandler.HandleExceptionAsync(ex, $"Validating workflow '{workflow.Name}'");
         }
     }
 

@@ -43,17 +43,10 @@ public interface IPluginManagerService
 /// <summary>
 /// Implementation of plugin manager service
 /// </summary>
-internal sealed class PluginManagerService : IPluginManagerService
+internal sealed class PluginManagerService(ISettingsService settingsService, IPluginInfoService pluginInfoService)
+    : IPluginManagerService
 {
-    private readonly ISettingsService _settingsService;
-    private readonly IPluginInfoService _pluginInfoService;
     private ObservableCollection<PluginInfo>? _cachedPlugins;
-
-    public PluginManagerService(ISettingsService settingsService, IPluginInfoService pluginInfoService)
-    {
-        _settingsService = settingsService;
-        _pluginInfoService = pluginInfoService;
-    }
 
     public async Task<ObservableCollection<PluginInfo>> GetAllPluginsAsync()
     {
@@ -62,8 +55,8 @@ internal sealed class PluginManagerService : IPluginManagerService
             return _cachedPlugins;
         }
 
-        var settings = await _settingsService.LoadSettingsAsync();
-        var pluginStatuses = await _pluginInfoService.GetAllPluginStatusesAsync();
+        var settings = await settingsService.LoadSettingsAsync();
+        var pluginStatuses = await pluginInfoService.GetAllPluginStatusesAsync();
 
         var plugins = new ObservableCollection<PluginInfo>();
         var pluginFiles = PluginDiscovery.GetManagedPluginFiles();
@@ -112,12 +105,12 @@ internal sealed class PluginManagerService : IPluginManagerService
 
         try
         {
-            var settings = await _settingsService.LoadSettingsAsync();
+            var settings = await settingsService.LoadSettingsAsync();
 
             if (!settings.Plugins.EnabledPlugins.Contains(pluginName))
             {
                 settings.Plugins.EnabledPlugins.Add(pluginName);
-                await _settingsService.SaveSettingsAsync(settings);
+                await settingsService.SaveSettingsAsync(settings);
             }
 
             if (_cachedPlugins != null)
@@ -143,9 +136,9 @@ internal sealed class PluginManagerService : IPluginManagerService
 
         try
         {
-            var settings = await _settingsService.LoadSettingsAsync();
+            var settings = await settingsService.LoadSettingsAsync();
             settings.Plugins.EnabledPlugins.Remove(pluginName);
-            await _settingsService.SaveSettingsAsync(settings);
+            await settingsService.SaveSettingsAsync(settings);
 
             if (_cachedPlugins != null)
             {
@@ -169,7 +162,7 @@ internal sealed class PluginManagerService : IPluginManagerService
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginName);
 
         var normalizedName = PluginDiscovery.GetDisplayName(pluginName);
-        var settings = await _settingsService.LoadSettingsAsync();
+        var settings = await settingsService.LoadSettingsAsync();
         return settings.Plugins.AutoLoadPlugins ||
                settings.Plugins.EnabledPlugins.Contains(pluginName) ||
                settings.Plugins.EnabledPlugins.Contains(normalizedName);

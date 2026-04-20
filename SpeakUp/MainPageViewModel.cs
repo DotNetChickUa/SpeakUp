@@ -84,7 +84,7 @@ public sealed partial class MainPageViewModel(
     private async Task StartListen()
     {
         RecognitionResult = null;
-        await SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = _speechCulture, ShouldReportPartialResults = true });
+        await SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = _speechCulture, ShouldReportPartialResults = true, AutoStopSilenceTimeout = TimeSpan.FromSeconds(10)});
         Subscribe();
     }
 
